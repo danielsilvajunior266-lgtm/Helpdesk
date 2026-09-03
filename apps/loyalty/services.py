@@ -16,6 +16,10 @@ def process_order_loyalty(order):
         return None
 
     with transaction.atomic():
+        existing = LoyaltyEvent.objects.filter(company=order.company, order=order, event_type='earned').first()
+        if existing:
+            return existing
+
         account, _ = LoyaltyAccount.objects.select_for_update().get_or_create(
             company=order.company,
             customer=order.customer,

@@ -1,0 +1,417 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="dark h-full bg-[#121519]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ selected_company.name|default:"AutoFlow" }} - Portal do Motorista{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        gold: {
+                            50: '#fdfbf2',
+                            100: '#faf4df',
+                            200: '#f3e6b7',
+                            300: '#ead285',
+                            400: '#dfbc52',
+                            500: '#d4af37',
+                            600: '#b88f28',
+                            700: '#936d22',
+                            800: '#795722',
+                            900: '#674820',
+                            950: '#3c270e',
+                        },
+                        obsidian: {
+                            800: '#111827',
+                            900: '#0b111e',
+                            950: '#070b13',
+                        },
+                        cyanwave: {
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #121519;
+            color: #F5F5F7;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121519;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E232A;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+        .glass-header {
+            background: rgba(20, 23, 26, 0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(163, 115, 76, 0.25);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
+        }
+        .glass-dock {
+            background: rgba(20, 23, 26, 0.95);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(163, 115, 76, 0.25);
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7);
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #F5E6BE 0%, #D4AF37 50%, #A3734C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .carbon-card {
+            background: linear-gradient(145deg, rgba(30, 35, 42, 0.95), rgba(18, 21, 25, 0.98));
+            border: 1px solid rgba(163, 115, 76, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+        .gold-card {
+            background: linear-gradient(145deg, rgba(30, 35, 42, 0.95), rgba(18, 21, 25, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+        .gold-card-highlight {
+            background: linear-gradient(145deg, rgba(30, 35, 42, 0.98), rgba(20, 23, 26, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+        }
+        .gold-btn {
+            background: linear-gradient(135deg, #D4AF37 0%, #C5A059 50%, #A3734C 100%);
+            color: #121519;
+            font-weight: 800;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+            border: 1px solid rgba(245, 230, 190, 0.4);
+            transition: all 300ms ease;
+        }
+        .gold-btn:hover {
+            background: linear-gradient(135deg, #F5E6BE 0%, #D4AF37 50%, #C5A059 100%);
+            box-shadow: 0 6px 22px rgba(30, 168, 215, 0.45);
+            transform: translateY(-1px);
+        }
+        /* Floating Zoom Icon Micro-interaction */
+        .icon-float {
+            color: #D4AF37;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+        }
+        .group:hover .icon-float,
+        .tab-btn-active .icon-float {
+            transform: scale(1.22) translateY(-2px);
+            color: #1EA8D7 !important;
+            filter: drop-shadow(0 0 10px rgba(30, 168, 215, 0.75)) !important;
+        }
+        .active-tab-indicator {
+            position: relative;
+        }
+        .active-tab-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: #1EA8D7;
+            border-radius: 9999px;
+            box-shadow: 0 0 10px #1EA8D7;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col antialiased bg-[#121519] text-[#F5F5F7] selection:bg-[#1EA8D7] selection:text-[#121519]" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    <!-- TOP NAVBAR (Desktop, Tablet & Mobile Header) -->
+    <header class="sticky top-0 z-40 glass-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            
+            <!-- Brand & Company Info -->
+            <div class="flex items-center space-x-3 flex-shrink-0">
+                <a href="{% url 'portal:home' %}" class="flex items-center space-x-3 group">
+                    <div class="w-12 h-12 rounded-2xl bg-[#121519] border border-[#D4AF37]/50 p-1 shadow-lg shadow-[#D4AF37]/20 group-hover:scale-105 group-hover:border-[#1EA8D7] transition-all flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        {% if selected_company.logo %}
+                            <img src="{{ selected_company.logo.url }}?v=4" alt="{{ selected_company.name }}" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+                        {% else %}
+                            <img src="{% static 'images/logo.png' %}?v=4" alt="Logo" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-extrabold text-base sm:text-lg tracking-tight text-white block">
+                                {{ selected_company.name|default:"AutoFlow Client" }}
+                            </span>
+                        </div>
+                        <span class="text-[11px] text-[#9A9FA8] font-medium block -mt-0.5">
+                            <i data-lucide="map-pin" class="w-3 h-3 inline mr-0.5 text-[#1EA8D7]"></i>
+                            {{ selected_company.address|default:"São Paulo, SP"|truncatechars:35 }}
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Desktop & Tablet Tabs (Centralized Navigation) -->
+            <nav class="hidden md:flex items-center space-x-2 bg-[#14171A]/95 p-2 rounded-2xl border border-[#A3734C]/35 shadow-lg">
+                <button onclick="switchTab('services')" id="tab-btn-services" class="tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all text-[#F5E6BE] bg-[#1EA8D7]/15 border border-[#1EA8D7]/40 shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4 icon-float"></i>
+                    <span>Catálogo</span>
+                </button>
+
+                <button onclick="switchTab('orders')" id="tab-btn-orders" class="tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]">
+                    <i data-lucide="car" class="w-4 h-4 icon-float"></i>
+                    <span>Meu Carro</span>
+                    {% if active_orders %}
+                        <span class="w-2 h-2 rounded-full bg-[#1EA8D7] animate-pulse ml-1"></span>
+                    {% endif %}
+                </button>
+
+                {% if selected_company.has_feature_loyalty or selected_company.plan.has_loyalty %}
+                <button onclick="switchTab('loyalty')" id="tab-btn-loyalty" class="tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]">
+                    <i data-lucide="gift" class="w-4 h-4 icon-float"></i>
+                    <span>Fidelidade</span>
+                </button>
+                {% endif %}
+
+                <button onclick="switchTab('garage')" id="tab-btn-garage" class="tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]">
+                    <i data-lucide="key" class="w-4 h-4 icon-float"></i>
+                    <span>Garagem</span>
+                </button>
+
+                <button onclick="switchTab('appointments')" id="tab-btn-appointments" class="tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]">
+                    <i data-lucide="calendar-clock" class="w-4 h-4 icon-float"></i>
+                    <span>Agendamentos</span>
+                </button>
+
+                <button onclick="switchTab('about')" id="tab-btn-about" class="tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]">
+                    <i data-lucide="info" class="w-4 h-4 icon-float"></i>
+                    <span>Sobre</span>
+                </button>
+            </nav>
+
+            <!-- User Menu / Unit Switcher -->
+            <div class="flex items-center space-x-3 flex-shrink-0">
+                <!-- Company Switcher Modal Trigger (if multiple companies exist) -->
+                {% if companies|length > 1 %}
+                <div class="relative">
+                    <a href="{% url 'portal:select_company' %}" class="px-3.5 py-2 rounded-xl bg-[#1E232A] border border-[#A3734C]/35 text-[#F5E6BE] hover:text-white hover:border-[#D4AF37] text-xs font-bold flex items-center space-x-1.5 transition-all shadow-sm">
+                        <i data-lucide="repeat" class="w-3.5 h-3.5 text-[#D4AF37]"></i>
+                        <span class="hidden sm:inline">Trocar Lava-Jato</span>
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Auth / Profile -->
+                {% if user.is_authenticated %}
+                <div class="flex items-center space-x-2.5 pl-1">
+                    <div class="hidden sm:block text-right">
+                        <div class="text-xs font-bold text-white">{{ user.first_name|default:user.username }}</div>
+                        <div class="text-[10px] text-[#D4AF37] font-bold flex items-center justify-end space-x-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#1EA8D7] animate-pulse"></span>
+                            <span>Cliente Conectado</span>
+                        </div>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#D4AF37] to-[#A3734C] p-0.5 shadow-md flex items-center justify-center">
+                        <div class="w-full h-full bg-[#121519] rounded-[10px] flex items-center justify-center font-extrabold text-[#D4AF37] text-xs">
+                            {{ user.first_name|default:user.username|slice:":2"|upper }}
+                        </div>
+                    </div>
+                    <a href="{% url 'accounts:logout' %}" title="Sair da Conta" class="p-2.5 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-[#9A9FA8] hover:text-rose-400 hover:border-rose-500/40 transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                {% else %}
+                <a href="{% url 'accounts:login' %}?next={% url 'portal:home' %}" class="gold-btn px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 transition-all">
+                    <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                    <span>Entrar VIP</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- FLASH MESSAGES -->
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full" id="portalFlashMessages">
+        {% for message in messages %}
+        <div class="flash-alert-item p-4 rounded-2xl mb-2 flex items-center justify-between border shadow-lg transition-all duration-500 ease-out
+            {% if message.tags == 'success' %}bg-emerald-950/70 border-emerald-500/40 text-emerald-200
+            {% elif message.tags == 'error' %}bg-rose-950/70 border-rose-500/40 text-rose-200
+            {% elif message.tags == 'warning' %}bg-amber-950/70 border-amber-500/40 text-amber-200
+            {% else %}bg-blue-950/70 border-blue-500/40 text-blue-200{% endif %}">
+            <div class="flex items-center space-x-3 text-sm font-medium">
+                <i data-lucide="{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}alert-octagon{% else %}info{% endif %}" class="w-5 h-5 flex-shrink-0"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button onclick="dismissAlert(this.closest('.flash-alert-item'))" class="text-slate-400 hover:text-white p-1 transition-colors" title="Fechar">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION DOCK (Native App Experience) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-dock px-3 py-2">
+        <div class="grid grid-cols-5 gap-1 text-center">
+            
+            <button onclick="switchTab('services')" id="mobile-tab-services" class="mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#1EA8D7] font-bold transition-all">
+                <i data-lucide="sparkles" class="w-5 h-5 mb-0.5 icon-float"></i>
+                <span class="text-[10px] tracking-tight">Catálogo</span>
+            </button>
+
+            <button onclick="switchTab('orders')" id="mobile-tab-orders" class="mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#9A9FA8] font-medium transition-all relative">
+                <i data-lucide="car" class="w-5 h-5 mb-0.5 icon-float"></i>
+                <span class="text-[10px] tracking-tight">Meu Carro</span>
+                {% if active_orders %}
+                <span class="absolute top-1 right-3 w-2 h-2 rounded-full bg-[#1EA8D7] animate-pulse"></span>
+                {% endif %}
+            </button>
+
+            {% if selected_company.has_feature_loyalty or selected_company.plan.has_loyalty %}
+            <button onclick="switchTab('loyalty')" id="mobile-tab-loyalty" class="mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#9A9FA8] font-medium transition-all">
+                <i data-lucide="gift" class="w-5 h-5 mb-0.5 icon-float"></i>
+                <span class="text-[10px] tracking-tight">Fidelidade</span>
+            </button>
+            {% else %}
+            <button onclick="switchTab('appointments')" id="mobile-tab-appointments" class="mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#9A9FA8] font-medium transition-all">
+                <i data-lucide="calendar-clock" class="w-5 h-5 mb-0.5 icon-float"></i>
+                <span class="text-[10px] tracking-tight">Agenda</span>
+            </button>
+            {% endif %}
+
+            <button onclick="switchTab('garage')" id="mobile-tab-garage" class="mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#9A9FA8] font-medium transition-all">
+                <i data-lucide="key" class="w-5 h-5 mb-0.5 icon-float"></i>
+                <span class="text-[10px] tracking-tight">Garagem</span>
+            </button>
+
+            <button onclick="switchTab('about')" id="mobile-tab-about" class="mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#9A9FA8] font-medium transition-all">
+                <i data-lucide="info" class="w-5 h-5 mb-0.5 icon-float"></i>
+                <span class="text-[10px] tracking-tight">Sobre</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        lucide.createIcons();
+
+        function toggleCompanyDropdown() {
+            const dropdown = document.getElementById('companyDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            const btn = document.getElementById('companyMenuBtn');
+            const dropdown = document.getElementById('companyDropdown');
+            if (btn && dropdown && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Esconder todas as abas
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Mostrar a aba selecionada
+            const target = document.getElementById('tab-pane-' + tabId);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+
+            // Atualizar botões Desktop
+            document.querySelectorAll('.tab-link').forEach(btn => {
+                btn.className = 'tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]';
+            });
+            const activeDesktopBtn = document.getElementById('tab-btn-' + tabId);
+            if (activeDesktopBtn) {
+                activeDesktopBtn.className = 'tab-link whitespace-nowrap group px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all text-[#F5E6BE] bg-[#1EA8D7]/15 border border-[#1EA8D7]/40 shadow-sm';
+            }
+
+            // Atualizar botões Mobile
+            document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+                btn.className = 'mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#9A9FA8] font-medium transition-all relative';
+            });
+            const activeMobileBtn = document.getElementById('mobile-tab-' + tabId);
+            if (activeMobileBtn) {
+                activeMobileBtn.className = 'mobile-tab-btn group flex flex-col items-center justify-center py-1 rounded-xl text-[#1EA8D7] font-bold transition-all relative';
+            }
+
+            // Atualizar URL query param sem recarregar
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.replaceState({}, '', url);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+        function dismissAlert(el) {
+            if (!el) return;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(() => {
+                el.remove();
+            }, 500);
+        }
+
+        function initAutoDismissAlerts() {
+            const alerts = document.querySelectorAll('.flash-alert-item:not([data-dismiss-initialized])');
+            alerts.forEach(function(alert) {
+                alert.setAttribute('data-dismiss-initialized', 'true');
+                setTimeout(function() {
+                    dismissAlert(alert);
+                }, 5000);
+            });
+        }
+
+        // Inicializar com a tab da URL ou 'services'
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialTab = urlParams.get('tab') || 'services';
+            switchTab(initialTab);
+            initAutoDismissAlerts();
+        });
+        initAutoDismissAlerts();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

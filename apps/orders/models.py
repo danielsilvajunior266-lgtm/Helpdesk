@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from apps.saas_core.models import TenantModel
 
@@ -55,7 +56,7 @@ class ServiceOrder(TenantModel):
 
     status = models.CharField('Status no Pátio', max_length=20, choices=STATUS_CHOICES, default='waiting')
     price = models.DecimalField('Preço Bruto (R$)', max_digits=10, decimal_places=2)
-    discount = models.DecimalField('Desconto (R$)', max_digits=10, decimal_places=2, default=0.00)
+    discount = models.DecimalField('Desconto (R$)', max_digits=10, decimal_places=2, default=Decimal('0.00'))
     final_price = models.DecimalField('Preço Final (R$)', max_digits=10, decimal_places=2)
 
     payment_method = models.CharField('Forma de Pagamento', max_length=30, choices=PAYMENT_METHOD_CHOICES, default='pending')
@@ -77,8 +78,18 @@ class ServiceOrder(TenantModel):
 
     def save(self, *args, **kwargs):
         if not self.final_price:
-            self.final_price = max(0, self.price - self.discount)
+            disc = Decimal(str(self.discount)) if self.discount is not None else Decimal('0.00')
+            price_dec = Decimal(str(self.price)) if self.price is not None else Decimal('0.00')
+            self.final_price = max(Decimal('0.00'), price_dec - disc)
         super().save(*args, **kwargs)
+
+    @property
+    def before_photo(self):
+        return next((p for p in self.photos.all() if p.stage == 'before'), None)
+
+    @property
+    def after_photo(self):
+        return next((p for p in self.photos.all() if p.stage == 'after'), None)
 
 
 class OrderPhoto(TenantModel):

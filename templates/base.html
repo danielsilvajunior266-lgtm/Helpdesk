@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="pt-br" class="dark h-full bg-slate-950">
+<html lang="pt-br" class="dark h-full bg-[#121519]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AutoFlow SaaS - Gestão de Estética Automotiva & Lava-Jato{% endblock %}</title>
+    <title>{% block title %}AutoFlow - Gestão de Estética Automotiva & Lava-Jato{% endblock %}</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,18 +22,28 @@
                         sans: ['Plus Jakarta Sans', 'sans-serif'],
                     },
                     colors: {
-                        brand: {
-                            50: '#eef8ff',
-                            100: '#d8eeff',
-                            200: '#b9e2fe',
-                            300: '#89d1fd',
-                            400: '#52b5fa',
-                            500: '#2b97f4',
-                            600: '#1578e3',
-                            700: '#1060c5',
-                            800: '#124ea0',
-                            900: '#14437f',
-                            950: '#0d2a52',
+                        gold: {
+                            50: '#fdfbf2',
+                            100: '#faf4df',
+                            200: '#f3e6b7',
+                            300: '#ead285',
+                            400: '#dfbc52',
+                            500: '#d4af37',
+                            600: '#b88f28',
+                            700: '#936d22',
+                            800: '#795722',
+                            900: '#674820',
+                            950: '#3c270e',
+                        },
+                        obsidian: {
+                            800: '#111827',
+                            900: '#0b111e',
+                            950: '#070b13',
+                        },
+                        cyanwave: {
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
                         }
                     }
                 }
@@ -45,10 +56,23 @@
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
+        :root {
+            --bg-carbon: #121519;
+            --bg-card: rgba(30, 35, 42, 0.85);
+            --gold-champagne: #D4AF37;
+            --gold-light: #F5E6BE;
+            --bronze-accent: #A3734C;
+            --cyan-action: #1EA8D7;
+            --cyan-glow: rgba(30, 168, 215, 0.7);
+            --text-primary: #F5F5F7;
+            --text-secondary: #9A9FA8;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #121519;
+            color: #F5F5F7;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
@@ -56,140 +80,245 @@
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #090d16;
+            background: #121519;
         }
         ::-webkit-scrollbar-thumb {
-            background: #1e293b;
+            background: #1e232a;
             border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
+            background: #D4AF37;
         }
         .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(30, 35, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #F5E6BE 0%, #D4AF37 50%, #A3734C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-btn {
+            background: linear-gradient(135deg, #D4AF37 0%, #C5A059 50%, #A3734C 100%);
+            color: #121519;
+            font-weight: 800;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+            border: 1px solid rgba(245, 230, 190, 0.4);
+            transition: all 300ms ease;
+        }
+        .gold-btn:hover {
+            background: linear-gradient(135deg, #F5E6BE 0%, #D4AF37 50%, #C5A059 100%);
+            box-shadow: 0 6px 22px rgba(30, 168, 215, 0.45);
+            transform: translateY(-1px);
+        }
+        .carbon-card {
+            background: linear-gradient(145deg, rgba(30, 35, 42, 0.95), rgba(18, 21, 25, 0.98));
+            border: 1px solid rgba(163, 115, 76, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(16px);
+            transition: all 300ms ease;
+        }
+        .carbon-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+        }
+        /* 3D Metallic Icon Badge */
+        .icon-badge-3d {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(163, 115, 76, 0.25) 50%, rgba(18, 21, 25, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: inset 0 1px 1px rgba(245, 230, 190, 0.4), 0 4px 12px rgba(0, 0, 0, 0.5);
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .group:hover .icon-badge-3d,
+        .kpi-card:hover .icon-badge-3d {
+            transform: translateY(-3px) scale(1.08);
+            border-color: rgba(30, 168, 215, 0.7);
+            box-shadow: inset 0 1px 2px rgba(56, 197, 238, 0.5), 0 0 16px rgba(30, 168, 215, 0.5);
+        }
+        .kpi-card {
+            background: linear-gradient(145deg, rgba(30, 35, 42, 0.92), rgba(18, 21, 25, 0.97));
+            border: 1px solid rgba(163, 115, 76, 0.3);
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: all 300ms ease;
+        }
+        .kpi-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(212, 175, 55, 0.15);
+        }
+        /* Floating Zoom Icon Micro-interaction */
+        .icon-float {
+            color: #D4AF37;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+        }
+        .group:hover .icon-float,
+        .active-nav-link .icon-float {
+            transform: scale(1.22) translateY(-2px);
+            color: #1EA8D7 !important;
+            filter: drop-shadow(0 0 10px rgba(30, 168, 215, 0.75)) !important;
+        }
+        .active-nav-link {
+            background: rgba(30, 168, 215, 0.12) !important;
+            border: 1px solid rgba(30, 168, 215, 0.4) !important;
+            color: #F5F5F7 !important;
+            box-shadow: 0 0 15px rgba(30, 168, 215, 0.15);
         }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full text-slate-100 bg-slate-950 flex overflow-hidden" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="h-full text-[#F5F5F7] bg-[#121519] flex overflow-hidden selection:bg-[#1EA8D7] selection:text-[#121519]" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
     {% if user.is_authenticated %}
-    <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900/90 border-r border-slate-800/80 flex flex-col flex-shrink-0 z-20">
+    <!-- Mobile Backdrop Overlay -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-[#121519]/80 backdrop-blur-sm z-30 hidden lg:hidden transition-opacity"></div>
+
+    <!-- Sidebar Drawer (Dark Carbon with Gold/Bronze/Cyan accents) -->
+    <aside id="appSidebar" class="fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#14171A]/95 lg:bg-[#14171A]/90 border-r border-[#A3734C]/25 flex flex-col flex-shrink-0 -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none">
         <!-- Logo & Brand -->
-        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800/80">
+        <div class="h-20 flex items-center justify-between px-5 border-b border-[#A3734C]/20 bg-[#121519]/60">
             <a href="{% url 'orders:kanban' %}" class="flex items-center space-x-3 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                    <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                <div class="w-12 h-12 rounded-xl bg-[#121519] border border-[#D4AF37]/50 p-1 shadow-lg shadow-[#D4AF37]/20 group-hover:scale-105 group-hover:border-[#1EA8D7] transition-all flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {% if current_company.logo %}
+                        <img src="{{ current_company.logo.url }}?v=4" alt="{{ current_company.name }}" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+                    {% else %}
+                        <img src="{% static 'images/logo.png' %}?v=4" alt="Logo" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+                    {% endif %}
                 </div>
-                <div>
-                    <span class="font-extrabold text-base tracking-tight text-white block">AutoFlow</span>
-                    <span class="text-[10px] text-blue-400 font-semibold tracking-wider uppercase block -mt-1">SaaS Multi-Tenant</span>
+                <div class="min-w-0">
+                    <span class="font-extrabold text-base tracking-tight text-white block truncate">AutoFlow</span>
+                    <span class="text-[10px] gold-gradient-text font-extrabold uppercase tracking-wider block -mt-0.5">Estética Automotiva</span>
                 </div>
             </a>
+            <button onclick="toggleSidebar()" class="lg:hidden text-[#9A9FA8] hover:text-white p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
         </div>
 
         <!-- Current Tenant Badge -->
         {% if current_company %}
-        <div class="px-4 py-3 mx-3 my-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-white truncate max-w-[130px]">{{ current_company.name }}</span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase
+        <div class="p-3.5 mx-3 my-3 rounded-2xl bg-gradient-to-b from-[#1E232A]/90 to-[#14171A]/90 border border-[#A3734C]/35 shadow-lg shadow-black/40 space-y-2.5">
+            <!-- Top Line: Plan Pill + Live Patio Indicator -->
+            <div class="flex items-center justify-between gap-2">
+                <span class="px-2.5 py-0.5 text-[10px] font-black rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap
                     {% if current_company.plan.code == 'premium' %}
-                        bg-amber-500/20 text-amber-300 border border-amber-500/30
+                        bg-[#D4AF37]/20 text-[#F5E6BE] border border-[#D4AF37]/50 shadow-[#D4AF37]/10
                     {% elif current_company.plan.code == 'pro' %}
-                        bg-blue-500/20 text-blue-300 border border-blue-500/30
+                        bg-[#1EA8D7]/20 text-[#38C5EE] border border-[#1EA8D7]/40 shadow-[#1EA8D7]/10
                     {% else %}
-                        bg-slate-700 text-slate-300
+                        bg-[#1E232A] text-[#9A9FA8] border border-slate-700
                     {% endif %}">
                     {{ current_company.plan.name }}
                 </span>
+                <div class="flex items-center gap-1.5 text-[11px]">
+                    <span class="w-2 h-2 rounded-full bg-[#1EA8D7] animate-pulse shadow-[0_0_6px_#1EA8D7]"></span>
+                    <span class="font-semibold text-[#F5F5F7]">Pátio Ativo</span>
+                </div>
             </div>
-            <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Pátio Operacional Ativo</span>
+
+            <!-- Company Name with Full Breathing Room -->
+            <div class="pt-0.5">
+                <span class="text-[10px] text-[#9A9FA8] uppercase font-bold tracking-wider block">Estabelecimento</span>
+                <h2 class="text-sm font-extrabold text-[#F5E6BE] leading-snug mt-0.5" title="{{ current_company.name }}">
+                    {{ current_company.name }}
+                </h2>
+            </div>
+            
+            <!-- Card Footer -->
+            <div class="pt-2 border-t border-[#A3734C]/20 flex items-center justify-between text-[10px]">
+                <span class="text-[#9A9FA8] font-medium">Unidade Operacional</span>
+                <span class="text-[#D4AF37] font-semibold">AutoFlow</span>
             </div>
         </div>
         {% endif %}
 
-        <!-- Navigation Menu -->
-        <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-            <div class="px-3 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Operacional</div>
+        <!-- Navigation Links with Floating Zoom Icons -->
+        <nav class="flex-1 px-3 space-y-1.5 overflow-y-auto py-2">
+            <div class="px-3 pb-1 text-[11px] font-semibold text-[#9A9FA8] uppercase tracking-wider">Operação</div>
             
-            <a href="{% url 'orders:kanban' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'orders' and request.resolver_match.url_name == 'kanban' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="layout-kanban" class="w-4 h-4"></i>
-                <span>Quadro do Pátio</span>
+            <a href="{% url 'orders:kanban' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'orders' and request.resolver_match.url_name == 'kanban' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="gauge" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Kanban / Pátio</span>
             </a>
 
-            <a href="{% url 'orders:create' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'orders' and request.resolver_match.url_name == 'create' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-400"></i>
-                <span>Nova Ordem (Entrada)</span>
+            <a href="{% url 'customers:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'customers' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="car" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Clientes & Veículos</span>
             </a>
 
-            <a href="{% url 'appointments:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'appointments' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="calendar" class="w-4 h-4"></i>
-                <span>Agendamentos</span>
+            <a href="{% url 'services:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'services' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="sparkles" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Serviços & Preços</span>
             </a>
 
-            <div class="pt-4 px-3 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Cadastros</div>
-
-            <a href="{% url 'customers:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'customers' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="users" class="w-4 h-4"></i>
-                <span>Clientes & Veículos</span>
+            <a href="{% url 'appointments:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'appointments' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="calendar" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Agendamentos</span>
             </a>
 
-            <a href="{% url 'services:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'services' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="tags" class="w-4 h-4"></i>
-                <span>Catálogo de Serviços</span>
-            </a>
+            <div class="pt-4 px-3 pb-1 text-[11px] font-semibold text-[#9A9FA8] uppercase tracking-wider">Gestão Financeira</div>
 
-            <div class="pt-4 px-3 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Gestão & Módulos</div>
-
-            <a href="{% url 'finance:cash_book' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'finance' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
-                <span>Livro Caixa</span>
+            <a href="{% url 'finance:cash_book' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'finance' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shield-check" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Livro Caixa / PDV</span>
             </a>
 
             <!-- Módulo Frotas (Plano Pro/Premium) -->
             {% if tenant_features.has_monthly_billing %}
-            <a href="{% url 'billing:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'billing' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="receipt" class="w-4 h-4 text-indigo-400"></i>
-                <span>Faturamento Frotas</span>
+            <a href="{% url 'billing:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'billing' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="receipt" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Faturamento Frotas</span>
             </a>
             {% endif %}
 
             <!-- Módulo Fidelidade (Plano Pro/Premium) -->
             {% if tenant_features.has_loyalty %}
-            <a href="{% url 'loyalty:dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'loyalty' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="gift" class="w-4 h-4 text-pink-400"></i>
-                <span>Clube Fidelidade</span>
+            <a href="{% url 'loyalty:dashboard' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'loyalty' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="gift" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Clube Fidelidade</span>
             </a>
             {% endif %}
 
             <!-- Módulo Comissões (Plano Premium) -->
             {% if tenant_features.has_commissions %}
-            <a href="{% url 'commissions:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'commissions' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
-                <i data-lucide="percent" class="w-4 h-4 text-amber-400"></i>
-                <span>Comissões Operadores</span>
+            <a href="{% url 'commissions:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'commissions' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+                <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="percent" class="w-4 h-4 icon-float"></i>
+                </div>
+                <span class="transition-colors group-hover:text-white">Comissões Operadores</span>
             </a>
             {% endif %}
         </nav>
 
         <!-- User profile footer -->
-        <div class="p-3 border-t border-slate-800/80">
-            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/30">
+        <div class="p-3 border-t border-[#A3734C]/20">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#1E232A]/60 border border-[#A3734C]/25">
                 <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold flex items-center justify-center text-xs flex-shrink-0">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#D4AF37] to-[#A3734C] text-[#121519] font-black flex items-center justify-center text-xs flex-shrink-0 shadow-md">
                         {{ user.first_name|default:user.username|make_list|first|upper }}
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs font-semibold text-white truncate">{{ user.get_full_name|default:user.username }}</p>
-                        <p class="text-[10px] text-slate-400 truncate">{{ user.get_role_display }}</p>
+                        <p class="text-xs font-bold text-[#F5F5F7] truncate">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="text-[10px] text-[#D4AF37] truncate font-semibold">{{ user.get_role_display }}</p>
                     </div>
                 </div>
-                <a href="{% url 'accounts:logout' %}" title="Sair" class="text-slate-400 hover:text-rose-400 transition-colors p-1">
+                <a href="{% url 'accounts:logout' %}" title="Sair" class="text-[#9A9FA8] hover:text-rose-400 transition-colors p-1">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                 </a>
             </div>
@@ -198,19 +327,94 @@
     {% endif %}
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#121519]">
         <!-- Top bar -->
-        <header class="h-16 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between px-8 z-10">
-            <div class="flex items-center gap-4">
-                <h1 class="text-lg font-bold text-white tracking-tight">{% block header_title %}Painel Operacional{% endblock %}</h1>
+        <header class="h-20 border-b border-[#A3734C]/25 bg-[#14171A]/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 lg:px-8 z-10 flex-shrink-0">
+            <div class="flex items-center gap-3 sm:gap-4">
+                {% if user.is_authenticated %}
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl bg-[#1E232A] text-[#9A9FA8] hover:text-white border border-[#A3734C]/30 flex items-center justify-center transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                {% endif %}
+                <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight truncate">{% block header_title %}Painel Operacional{% endblock %}</h1>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-4">
                 {% block top_actions %}{% endblock %}
+
+                <!-- Metallic Notification Bell with Cyan/Gold Glowing Beacon & Dropdown Menu -->
+                <div class="relative" id="notificationsWrapper">
+                    <button onclick="toggleNotificationsDropdown()" id="notificationsBtn" class="w-10 h-10 rounded-xl icon-badge-3d flex items-center justify-center text-[#D4AF37] hover:text-[#1EA8D7] focus:outline-none transition-colors relative" title="Central de Notificações Operacionais">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-r from-red-500 to-[#1EA8D7] text-white text-[10px] font-black flex items-center justify-center shadow-[0_0_10px_#1EA8D7] animate-pulse">
+                            {{ unread_notifications_count }}
+                        </span>
+                        {% else %}
+                        <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+                        {% endif %}
+                    </button>
+
+                    <!-- Notifications Dropdown Card -->
+                    <div id="notificationsDropdown" class="hidden absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-[#14171A]/95 backdrop-blur-xl border border-[#A3734C]/40 shadow-2xl shadow-black/80 z-50 overflow-hidden transform transition-all duration-200">
+                        <div class="px-4 py-3.5 border-b border-[#A3734C]/25 bg-gradient-to-r from-[#1E232A] to-[#14171A] flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg icon-badge-3d flex items-center justify-center">
+                                    <i data-lucide="bell-ring" class="w-3.5 h-3.5 text-[#D4AF37]"></i>
+                                </div>
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Notificações & Alertas</h3>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold {% if unread_notifications_count > 0 %}bg-[#1EA8D7]/20 text-[#38C5EE] border border-[#1EA8D7]/40{% else %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% endif %}">
+                                {% if unread_notifications_count > 0 %}{{ unread_notifications_count }} nova(s){% else %}Tudo em dia{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="max-h-[380px] overflow-y-auto divide-y divide-[#A3734C]/15">
+                            {% for notif in notifications %}
+                            <a href="{{ notif.link }}" class="block p-3.5 hover:bg-[#1E232A]/80 transition-colors group">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5
+                                        {% if notif.color == 'cyan' %}bg-[#1EA8D7]/15 border border-[#1EA8D7]/40 text-[#38C5EE]
+                                        {% elif notif.color == 'gold' %}bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F5E6BE]
+                                        {% elif notif.color == 'emerald' %}bg-emerald-500/15 border border-emerald-500/40 text-emerald-300
+                                        {% else %}bg-[#A3734C]/15 border border-[#A3734C]/40 text-[#D4AF37]{% endif %}">
+                                        <i data-lucide="{{ notif.icon }}" class="w-4 h-4"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-1 mb-1">
+                                            <p class="text-xs font-bold text-white group-hover:text-[#38C5EE] transition-colors truncate">{{ notif.title }}</p>
+                                            <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[#121519] text-[#9A9FA8] border border-[#A3734C]/20">{{ notif.badge }}</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">{{ notif.message }}</p>
+                                        <span class="text-[9px] text-[#9A9FA8] mt-1.5 block flex items-center gap-1">
+                                            <i data-lucide="clock" class="w-2.5 h-2.5"></i>
+                                            {{ notif.time|date:"d/m/Y H:i" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% empty %}
+                            <div class="p-6 text-center">
+                                <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-400 mx-auto mb-2 stroke-[1.5]"></i>
+                                <p class="text-xs font-semibold text-slate-300">Tudo calmo no pátio!</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">Nenhum alerta pendente no momento.</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="p-2.5 border-t border-[#A3734C]/25 bg-[#121519]/90 text-center">
+                            <a href="{% url 'appointments:list' %}" class="text-[11px] font-bold text-[#1EA8D7] hover:text-[#38C5EE] transition-colors flex items-center justify-center gap-1">
+                                <span>Ver Todos os Agendamentos</span>
+                                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 {% if user.is_staff or user.role == 'superadmin' %}
-                <a href="/admin/" target="_blank" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-colors flex items-center gap-1.5">
-                    <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span>Django Admin</span>
+                <a href="/admin/" target="_blank" class="px-3 py-2 text-xs font-bold rounded-xl bg-[#1E232A] text-[#F5E6BE] border border-[#D4AF37]/40 hover:border-[#1EA8D7] transition-all flex items-center gap-1.5 shadow-sm">
+                    <i data-lucide="shield" class="w-3.5 h-3.5 text-[#D4AF37]"></i>
+                    <span class="hidden sm:inline">Django Admin</span>
                 </a>
                 {% endif %}
             </div>
@@ -218,9 +422,9 @@
 
         <!-- Flash messages -->
         {% if messages %}
-        <div class="px-8 pt-4 space-y-2">
+        <div class="px-4 sm:px-6 lg:px-8 pt-4 space-y-2" id="flashMessagesContainer">
             {% for message in messages %}
-            <div class="p-3.5 rounded-xl text-sm font-medium flex items-center justify-between border
+            <div class="flash-alert-item p-3.5 rounded-xl text-sm font-medium flex items-center justify-between border shadow-lg transition-all duration-500 ease-out
                 {% if message.tags == 'success' %}
                     bg-emerald-500/10 text-emerald-300 border-emerald-500/20
                 {% elif message.tags == 'error' %}
@@ -230,18 +434,18 @@
                 {% else %}
                     bg-blue-500/10 text-blue-300 border-blue-500/20
                 {% endif %}">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="info" class="w-4 h-4"></i>
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}alert-octagon{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-4 h-4 flex-shrink-0"></i>
                     <span>{{ message }}</span>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-xs opacity-60 hover:opacity-100">&times;</button>
+                <button onclick="dismissAlert(this.closest('.flash-alert-item'))" class="text-xs opacity-60 hover:opacity-100 p-1 text-slate-400 hover:text-white transition-colors" title="Fechar">&times;</button>
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
         <!-- Body content -->
-        <div class="flex-1 overflow-y-auto p-8">
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
             {% block content %}{% endblock %}
         </div>
     </main>
@@ -250,7 +454,61 @@
         lucide.createIcons();
         document.body.addEventListener('htmx:afterSwap', function() {
             lucide.createIcons();
+            initAutoDismissAlerts();
         });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('appSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (sidebar && backdrop) {
+                const isClosed = sidebar.classList.contains('-translate-x-full');
+                if (isClosed) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                }
+            }
+        }
+
+        function toggleNotificationsDropdown() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notificationsWrapper');
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (wrapper && dropdown && !wrapper.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function dismissAlert(el) {
+            if (!el) return;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(() => {
+                el.remove();
+            }, 500);
+        }
+
+        function initAutoDismissAlerts() {
+            const alerts = document.querySelectorAll('.flash-alert-item:not([data-dismiss-initialized])');
+            alerts.forEach(function(alert) {
+                alert.setAttribute('data-dismiss-initialized', 'true');
+                setTimeout(function() {
+                    dismissAlert(alert);
+                }, 5000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initAutoDismissAlerts);
+        initAutoDismissAlerts();
     </script>
     {% block extra_js %}{% endblock %}
 </body>

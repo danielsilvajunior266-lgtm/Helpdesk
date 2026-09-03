@@ -5,8 +5,13 @@ from apps.finance.models import CashEntry, CashCategory
 def create_cash_entry_from_order(order):
     """
     Cria uma entrada no livro caixa para uma ordem de serviço concluída de cliente avulso.
+    Garante idempotência evitando duplicidade caso a função seja invocada repetidamente.
     """
     with transaction.atomic():
+        existing = CashEntry.objects.filter(company=order.company, order=order).first()
+        if existing:
+            return existing
+
         # Obtém ou cria uma categoria padrão de receita de serviços
         category, _ = CashCategory.objects.get_or_create(
             company=order.company,

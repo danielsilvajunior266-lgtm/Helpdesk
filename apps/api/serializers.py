@@ -48,9 +48,21 @@ class VehicleSerializer(serializers.ModelSerializer):
         fields = ['id', 'plate', 'brand', 'model', 'color', 'vehicle_type', 'photo']
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        company = self.context.get('company') or user.company
-        
+        request = self.context.get('request')
+        user = request.user if request else None
+        company = self.context.get('company') or (user.company if user else None)
+
+        if not company and request:
+            company_id = request.data.get('company') or request.data.get('company_id')
+            if company_id and str(company_id).isdigit():
+                company = Company.objects.filter(id=int(company_id), status='active').first()
+
+        if not company:
+            company = Company.objects.filter(status='active').first()
+
+        if not company:
+            raise serializers.ValidationError({'company': 'Nenhuma empresa operacional encontrada para associar o veículo.'})
+
         # Obtém ou cria o perfil de Customer para o usuário autenticado
         customer, _ = Customer.objects.get_or_create(
             user=user,
@@ -75,10 +87,9 @@ class RegisterCustomerSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         user = User.objects.create_user(
             role='customer',
+            password=password,
             **validated_data
         )
-        user.set_password(password)
-        user.save()
         return user
 
 
@@ -95,6 +106,33 @@ class AppointmentSerializer(serializers.ModelSerializer):
             'status', 'notes'
         ]
         read_only_fields = ['status', 'company_name', 'vehicle_plate', 'service_name']
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        company = attrs.get('company')
+        service_type = attrs.get('service_type')
+        vehicle = attrs.get('vehicle')
+
+        # 1. Valida se a empresa possui a funcionalidade de agendamento online ativa no plano
+        if company and not company.has_feature('mobile_booking'):
+            raise serializers.ValidationError(
+                {'company': f'A empresa "{company.name}" não aceita agendamentos pelo aplicativo no plano atual.'}
+            )
+
+        # 2. Valida se o serviço pertence à empresa informada
+        if service_type and company and service_type.company_id != company.id:
+            raise serializers.ValidationError(
+                {'service_type': f'O serviço selecionado não pertence ao catálogo de {company.name}.'}
+            )
+
+        # 3. Valida se o veículo pertence ao usuário autenticado
+        if request and request.user.is_authenticated and vehicle:
+            if not Vehicle.objects.filter(id=vehicle.id, customer__user=request.user).exists():
+                raise serializers.ValidationError(
+                    {'vehicle': 'O veículo selecionado não pertence à sua garagem.'}
+                )
+
+        return attrs
 
 
 class OrderPhotoSerializer(serializers.ModelSerializer):
@@ -126,8 +164,8 @@ class LoyaltyEventSerializer(serializers.ModelSerializer):
 
 class LoyaltyAccountSerializer(serializers.ModelSerializer):
     events = LoyaltyEventSerializer(many=True, read_only=True)
-    reward_description = serializers.CharField(source='company.saas_core_loyaltyprogram_set.first.reward_description', default='Recompensa VIP', read_only=True)
-    points_needed = serializers.IntegerField(source='company.saas_core_loyaltyprogram_set.first.points_needed_for_reward', default=100, read_only=True)
+    reward_description = serializers.CharField(source='company.loyalty_loyaltyprogram_set.first.reward_description', default='Recompensa VIP', read_only=True)
+    points_needed = serializers.IntegerField(source='company.loyalty_loyaltyprogram_set.first.points_needed_for_reward', default=100, read_only=True)
 
     class Meta:
         model = LoyaltyAccount

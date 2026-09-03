@@ -17,6 +17,7 @@ urlpatterns = [
     path('billing/', include(('apps.billing.urls', 'billing'), namespace='billing')),
     path('appointments/', include(('apps.appointments.urls', 'appointments'), namespace='appointments')),
     path('commissions/', include(('apps.commissions.urls', 'commissions'), namespace='commissions')),
+    path('portal/', include(('apps.portal.urls', 'portal'), namespace='portal')),
     path('api/v1/', include(('apps.api.urls', 'api'), namespace='api')),
 ]
 

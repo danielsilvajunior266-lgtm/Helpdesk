@@ -28,7 +28,15 @@
                     {% for customer in customers %}
                     <tr class="hover:bg-slate-900/40 transition-colors">
                         <td class="px-6 py-4">
-                            <strong class="text-white text-sm block">{{ customer.name }}</strong>
+                            <div class="flex items-center gap-2">
+                                <strong class="text-white text-sm block">{{ customer.name }}</strong>
+                                {% if customer.is_vip %}
+                                <span class="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F5E6BE] text-[10px] font-extrabold flex items-center gap-1 shadow-sm shadow-[#D4AF37]/20">
+                                    <i data-lucide="crown" class="w-3 h-3 text-[#D4AF37]"></i>
+                                    <span>CLIENTE VIP</span>
+                                </span>
+                                {% endif %}
+                            </div>
                             <span class="text-slate-500 text-[11px]">{{ customer.document|default:"Documento não informado" }}</span>
                         </td>
                         <td class="px-6 py-4">

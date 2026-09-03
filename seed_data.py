@@ -199,16 +199,36 @@ def run_seed():
         }
     )
 
+    # Usuário Cliente Motorista (App Mobile e Portal Web)
+    cliente_user = User.objects.filter(email='cliente@autoflow.com').first()
+    if not cliente_user:
+        cliente_user = User.objects.create_user(
+            email='cliente@autoflow.com',
+            username='cliente_vip',
+            first_name='Roberto',
+            last_name='Guimarães',
+            role='customer',
+            phone='(11) 98765-4321',
+            company=company_premium
+        )
+        cliente_user.set_password('123')
+        cliente_user.save()
+
     # Clientes & Veículos Premium
-    cust_vip, _ = Customer.objects.get_or_create(
-        company=company_premium,
-        name='Dr. Roberto Guimarães',
-        defaults={
-            'phone': '(11) 98765-4321',
-            'email': 'roberto@medicina.com',
-            'billing_type': 'per_service'
-        }
-    )
+    cust_vip = Customer.objects.filter(company=company_premium, name='Dr. Roberto Guimarães').first()
+    if not cust_vip:
+        cust_vip = Customer.objects.create(
+            company=company_premium,
+            user=cliente_user,
+            name='Dr. Roberto Guimarães',
+            phone='(11) 98765-4321',
+            email='cliente@autoflow.com',
+            billing_type='per_service'
+        )
+    else:
+        cust_vip.user = cliente_user
+        cust_vip.email = 'cliente@autoflow.com'
+        cust_vip.save()
 
     veh_bmw, _ = Vehicle.objects.get_or_create(
         company=company_premium,

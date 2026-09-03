@@ -30,7 +30,15 @@
                             <span class="text-xs text-blue-400 font-bold">às {{ app.scheduled_time }}</span>
                         </td>
                         <td class="px-6 py-4">
-                            <strong class="text-white block">{{ app.customer.name }}</strong>
+                            <div class="flex items-center gap-1.5">
+                                <strong class="text-white block">{{ app.customer.name }}</strong>
+                                {% if app.customer.is_vip %}
+                                <span class="px-1.5 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F5E6BE] text-[9px] font-black flex items-center gap-0.5 shadow-sm">
+                                    <i data-lucide="crown" class="w-2.5 h-2.5 text-[#D4AF37]"></i>
+                                    <span>VIP</span>
+                                </span>
+                                {% endif %}
+                            </div>
                             <span class="text-slate-500 text-[11px]">{{ app.customer.phone }}</span>
                         </td>
                         <td class="px-6 py-4">

@@ -4,8 +4,8 @@
 {% block header_title %}Ordem de Serviço #{{ order.id }}{% endblock %}
 
 {% block top_actions %}
-<a href="{% url 'orders:kanban' %}" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors flex items-center gap-2">
-    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+<a href="{% url 'orders:kanban' %}" class="px-4 py-2 rounded-xl bg-[#1E232A] hover:bg-[#252B33] text-[#F5E6BE] border border-[#A3734C]/30 font-bold text-xs transition-all flex items-center gap-2 shadow-sm">
+    <i data-lucide="arrow-left" class="w-4 h-4 text-[#D4AF37]"></i>
     <span>Voltar ao Pátio</span>
 </a>
 {% endblock %}
@@ -13,32 +13,40 @@
 {% block content %}
 <div class="max-w-5xl mx-auto space-y-8">
     <!-- OS Header Card -->
-    <div class="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+    <div class="carbon-card p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <div class="w-14 h-14 rounded-2xl icon-badge-3d flex items-center justify-center text-[#D4AF37]">
                 <i data-lucide="car" class="w-7 h-7"></i>
             </div>
             <div>
                 <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 text-sm font-mono font-black tracking-wider rounded-lg bg-slate-800 border border-slate-700 text-white uppercase">{{ order.vehicle.plate }}</span>
+                    <span class="px-3 py-1 text-sm font-mono font-black tracking-wider rounded-lg bg-[#121519] border border-[#A3734C]/35 text-[#D4AF37] uppercase">{{ order.vehicle.plate }}</span>
                     <span class="px-3 py-0.5 text-xs font-bold rounded-full uppercase
-                        {% if order.status == 'waiting' %}bg-amber-500/20 text-amber-300 border border-amber-500/30
-                        {% elif order.status == 'in_progress' %}bg-blue-500/20 text-blue-300 border border-blue-500/30
+                        {% if order.status == 'waiting' %}bg-[#D4AF37]/20 text-[#F5E6BE] border border-[#D4AF37]/35
+                        {% elif order.status == 'in_progress' %}bg-[#1EA8D7]/20 text-[#38C5EE] border border-[#1EA8D7]/40
                         {% elif order.status == 'completed' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
                         {% elif order.status == 'delivered' %}bg-purple-500/20 text-purple-300 border border-purple-500/30
-                        {% else %}bg-slate-700 text-slate-300{% endif %}">
+                        {% else %}bg-[#1E232A] text-[#9A9FA8]{% endif %}">
                         {{ order.get_status_display }}
                     </span>
                 </div>
                 <h2 class="text-lg font-bold text-white mt-1">{{ order.vehicle.brand }} {{ order.vehicle.model }} ({{ order.vehicle.color }})</h2>
-                <p class="text-xs text-slate-400">Cliente: <strong class="text-slate-200">{{ order.customer.name }}</strong> • Telefone: {{ order.customer.phone }}</p>
+                <p class="text-xs text-[#9A9FA8]">Cliente: <strong class="text-white">{{ order.customer.name }}</strong>
+                    {% if order.customer.is_vip %}
+                    <span class="px-2 py-0.5 ml-1.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F5E6BE] text-[10px] font-black inline-flex items-center gap-1 shadow-sm">
+                        <i data-lucide="crown" class="w-3 h-3 text-[#D4AF37]"></i>
+                        <span>CLIENTE VIP (Fiel)</span>
+                    </span>
+                    {% endif %}
+                    • Telefone: {{ order.customer.phone }}
+                </p>
             </div>
         </div>
 
         <div class="text-right">
-            <p class="text-xs text-slate-400">Valor Final</p>
-            <p class="text-2xl font-black text-emerald-400">R$ {{ order.final_price }}</p>
-            <p class="text-[11px] text-slate-500">Forma: {{ order.get_payment_method_display }}</p>
+            <p class="text-xs text-[#9A9FA8]">Valor Final</p>
+            <p class="text-2xl font-black text-[#D4AF37]">R$ {{ order.final_price }}</p>
+            <p class="text-[11px] text-[#9A9FA8]">Forma: {{ order.get_payment_method_display }}</p>
         </div>
     </div>
 

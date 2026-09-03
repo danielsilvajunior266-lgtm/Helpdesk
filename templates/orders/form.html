@@ -5,26 +5,26 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    <div class="glass-panel p-8 rounded-3xl border border-slate-800 shadow-xl">
+    <div class="carbon-card p-8 rounded-3xl">
         <form method="post" class="space-y-6">
             {% csrf_token %}
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Veículo do Cliente</label>
-                <select name="vehicle" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-2 uppercase tracking-wider">Veículo do Cliente</label>
+                <select name="vehicle" required class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                     <option value="">Selecione o veículo...</option>
                     {% for vehicle in vehicles %}
                     <option value="{{ vehicle.id }}">{{ vehicle.plate }} - {{ vehicle.brand }} {{ vehicle.model }} (Proprietário: {{ vehicle.customer.name }})</option>
                     {% endfor %}
                 </select>
                 <div class="mt-2 text-right">
-                    <a href="{% url 'customers:create' %}" class="text-xs text-blue-400 hover:underline">+ Cadastrar novo cliente / veículo</a>
+                    <a href="{% url 'customers:create' %}" class="text-xs text-[#1EA8D7] hover:underline font-semibold">+ Cadastrar novo cliente / veículo</a>
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Serviço Solicitado</label>
-                <select name="service_type" id="service_type" required onchange="updatePrice(this)" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-2 uppercase tracking-wider">Serviço Solicitado</label>
+                <select name="service_type" id="service_type" required onchange="updatePrice(this)" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                     <option value="">Selecione o serviço...</option>
                     {% for service in services %}
                     <option value="{{ service.id }}" data-price="{{ service.default_price }}">{{ service.name }} - R$ {{ service.default_price }} (~{{ service.estimated_duration_minutes }} min)</option>
@@ -34,19 +34,19 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Preço Acordado (R$)</label>
-                    <input type="number" step="0.01" name="price" id="price_input" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-[#F5E6BE] mb-2 uppercase tracking-wider">Preço Acordado (R$)</label>
+                    <input type="number" step="0.01" name="price" id="price_input" required class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Desconto Especial (R$)</label>
-                    <input type="number" step="0.01" name="discount" value="0.00" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-[#F5E6BE] mb-2 uppercase tracking-wider">Desconto Especial (R$)</label>
+                    <input type="number" step="0.01" name="discount" value="0.00" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Operador / Lavador Responsável</label>
-                <select name="assigned_to" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-2 uppercase tracking-wider">Operador / Profissional Responsável</label>
+                <select name="assigned_to" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                     <option value="">Definir no pátio posteriormente...</option>
                     {% for emp in employees %}
                     <option value="{{ emp.id }}">{{ emp.get_full_name|default:emp.username }}</option>
@@ -55,13 +55,13 @@
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Observações / Pertences no Carro</label>
-                <textarea name="notes" rows="3" placeholder="Ex: Deixou óculos de sol no console; cliente solicitou atenção especial às rodas." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-2 uppercase tracking-wider">Observações / Pertences no Carro</label>
+                <textarea name="notes" rows="3" placeholder="Ex: Deixou óculos de sol no console; cliente solicitou atenção especial às rodas." class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white placeholder-[#9A9FA8] focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all"></textarea>
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                <a href="{% url 'orders:kanban' %}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors">Cancelar</a>
-                <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/25 transition-all">
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#A3734C]/25">
+                <a href="{% url 'orders:kanban' %}" class="px-5 py-2.5 rounded-xl bg-[#1E232A] hover:bg-[#252B33] text-[#9A9FA8] hover:text-white font-semibold text-sm border border-[#A3734C]/30 transition-all">Cancelar</a>
+                <button type="submit" class="gold-btn px-6 py-2.5 rounded-xl text-sm font-black shadow-lg transition-all">
                     Registrar Entrada no Pátio
                 </button>
             </div>

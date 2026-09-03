@@ -53,8 +53,16 @@ def order_create(request):
         service = get_object_or_404(ServiceType, id=service_type_id, company=company)
         assigned_to = User.objects.filter(id=assigned_to_id, company=company).first() if assigned_to_id else None
 
-        price = float(custom_price) if custom_price else float(service.default_price)
-        discount_val = float(discount) if discount else 0.0
+        try:
+            price = float(str(custom_price).replace(',', '.')) if custom_price else float(service.default_price)
+        except (ValueError, TypeError):
+            price = float(service.default_price)
+
+        try:
+            discount_val = float(str(discount).replace(',', '.')) if discount else 0.0
+        except (ValueError, TypeError):
+            discount_val = 0.0
+
         final_price = max(0.0, price - discount_val)
 
         order = ServiceOrder.objects.create(

@@ -1,0 +1,899 @@
+{% extends "portal/base_portal.html" %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- HERO BANNER (Responsive across Mobile, Tablet and Desktop) -->
+    <div class="relative overflow-hidden rounded-3xl carbon-card p-5 sm:p-7 md:p-8 shadow-2xl">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            
+            <div class="space-y-2 max-w-2xl">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#1EA8D7]/15 text-[#38C5EE] text-xs font-bold border border-[#1EA8D7]/30">
+                    <span class="w-2 h-2 rounded-full bg-[#1EA8D7] animate-ping"></span>
+                    <span>Portal Oficial do Motorista</span>
+                </div>
+                
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+                    {% if user.is_authenticated %}
+                        Olá, <span class="gold-gradient-text">{{ user.first_name|default:user.username }}</span>! 👋
+                    {% else %}
+                        Bem-vindo ao <span class="gold-gradient-text">{{ selected_company.name }}</span>!
+                    {% endif %}
+                </h1>
+                
+                <p class="text-xs sm:text-sm text-[#9A9FA8] leading-relaxed">
+                    Agende serviços de estética automotiva para seu carro, acompanhe a lavagem em tempo real e consulte seus pontos de fidelidade direto pelo seu celular, tablet ou computador.
+                </p>
+            </div>
+
+            <!-- Quick Stats Strip on Desktop / Tablet -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-3 bg-[#121519]/80 p-3 sm:p-4 rounded-2xl border border-[#A3734C]/30 backdrop-blur-md">
+                <div class="text-center p-2 rounded-xl bg-[#1E232A]">
+                    <div class="text-lg sm:text-xl font-black text-[#D4AF37]">{{ vehicles|length }}</div>
+                    <div class="text-[10px] text-[#9A9FA8] font-medium">Veículos</div>
+                </div>
+                <div class="text-center p-2 rounded-xl bg-[#1E232A]">
+                    <div class="text-lg sm:text-xl font-black text-[#1EA8D7]">{{ active_orders|length }}</div>
+                    <div class="text-[10px] text-[#9A9FA8] font-medium">No Pátio</div>
+                </div>
+                <div class="text-center p-2 rounded-xl bg-[#1E232A]">
+                    <div class="text-lg sm:text-xl font-black text-[#F5E6BE]">{{ loyalty_account.points_balance|default:"0" }}</div>
+                    <div class="text-[10px] text-[#9A9FA8] font-medium">Pontos VIP</div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Subtle background glow decoration -->
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-[#1EA8D7]/10 rounded-full blur-3xl pointer-events-none"></div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 1: CATÁLOGO DE SERVIÇOS & AGENDAMENTO -->
+    <!-- ========================================== -->
+    <section id="tab-pane-services" class="tab-content space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-[#D4AF37]"></i>
+                    <span>Catálogo de Serviços & Cuidados Automotivos</span>
+                </h2>
+                <p class="text-xs text-[#9A9FA8]">Escolha o serviço desejado e faça seu agendamento em poucos cliques</p>
+            </div>
+
+            <!-- Category filter chips (interactive JS) -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+                <button onclick="filterServices('all')" class="category-btn active px-3 py-1.5 rounded-xl font-bold bg-[#1EA8D7] text-[#121519] shadow-md transition-all">
+                    Todos ({{ services|length }})
+                </button>
+            </div>
+        </div>
+
+        <!-- Services Grid (1 col on Mobile, 2 cols on Tablet, 3-4 cols on PC) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {% for service in services %}
+            <div class="service-card group rounded-3xl bg-[#1E232A] border border-[#A3734C]/30 hover:border-[#1EA8D7] p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#1EA8D7]/10" data-category="{{ service.category.name|default:'Geral' }}">
+                
+                <div class="space-y-3">
+                    <div class="flex items-start justify-between">
+                        <div class="w-12 h-12 rounded-2xl icon-badge-3d flex items-center justify-center text-[#D4AF37] group-hover:text-[#1EA8D7] group-hover:scale-110 transition-all">
+                            <i data-lucide="sparkles" class="w-6 h-6"></i>
+                        </div>
+                        
+                        <div class="text-right">
+                            <div class="text-lg font-black text-[#D4AF37] tracking-tight">
+                                R$ {{ service.default_price|floatformat:2 }}
+                            </div>
+                            <div class="text-[11px] text-[#9A9FA8] flex items-center justify-end space-x-1">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>~{{ service.estimated_duration_minutes }} min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider text-[#38C5EE] bg-[#1EA8D7]/15 border border-[#1EA8D7]/30 px-2 py-0.5 rounded-md mb-1.5">
+                            {{ service.category.name|default:"Estética Automotiva" }}
+                        </span>
+                        <h3 class="font-bold text-base text-white group-hover:text-[#F5E6BE] transition-colors">
+                            {{ service.name }}
+                        </h3>
+                        <p class="text-xs text-[#9A9FA8] mt-1 line-clamp-2 leading-relaxed">
+                            {{ service.description|default:"Serviço profissional de alta precisão com produtos de alta performance e garantia de brilho." }}
+                        </p>
+                    </div>
+
+                    {% if service.loyalty_points_earned > 0 and selected_company.plan.has_loyalty %}
+                    <div class="flex items-center space-x-1.5 text-[11px] font-semibold text-[#1EA8D7] bg-[#1EA8D7]/10 border border-[#1EA8D7]/20 px-2.5 py-1 rounded-xl">
+                        <i data-lucide="gift" class="w-3.5 h-3.5"></i>
+                        <span>Gera +{{ service.loyalty_points_earned }} pontos VIP</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="pt-4 mt-4 border-t border-[#A3734C]/20">
+                    <button onclick="openBookingModal('{{ service.id }}', '{{ service.name|escapejs }}', '{{ service.default_price|floatformat:2 }}', '{{ service.estimated_duration_minutes }}', '{{ service.loyalty_points_earned }}')"
+                        class="gold-btn w-full py-2.5 px-4 rounded-xl text-xs font-black shadow-lg flex items-center justify-center space-x-2 transition-all active:scale-95">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        <span>Agendar Agora</span>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-12 text-center bg-[#1E232A]/50 rounded-3xl border border-dashed border-[#A3734C]/30">
+                <i data-lucide="package-open" class="w-12 h-12 text-[#9A9FA8] mx-auto mb-3"></i>
+                <h4 class="text-white font-bold text-base">Nenhum serviço disponível no momento</h4>
+                <p class="text-[#9A9FA8] text-xs mt-1">Este lava-jato ainda está atualizando a tabela de serviços.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 2: MEU CARRO NO PÁTIO (LIVE TRACKER)   -->
+    <!-- ========================================== -->
+    <section id="tab-pane-orders" class="tab-content hidden space-y-6">
+        
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="car" class="w-5 h-5 text-emerald-400"></i>
+                <span>Acompanhamento em Tempo Real</span>
+            </h2>
+            <p class="text-xs text-slate-400">Status atualizado do seu veículo em atendimento e vistorias fotográficas</p>
+        </div>
+
+        {% if active_orders %}
+            <div class="space-y-6">
+                {% for order in active_orders %}
+                <div class="rounded-3xl carbon-card p-5 sm:p-7 shadow-2xl space-y-6">
+                    
+                    <!-- Header da OS -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#A3734C]/20">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-14 h-14 rounded-2xl bg-[#121519] border border-[#D4AF37]/40 flex items-center justify-center font-black font-mono text-base text-[#D4AF37] shadow-md">
+                                {{ order.vehicle.plate }}
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="font-extrabold text-lg text-white">
+                                        {{ order.vehicle.brand }} {{ order.vehicle.model }}
+                                    </h3>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#1EA8D7]/15 text-[#38C5EE] border border-[#1EA8D7]/30">
+                                        OS #{{ order.id }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-[#9A9FA8] mt-0.5">
+                                    Serviço: <strong class="text-[#F5E6BE]">{{ order.service_type.name }}</strong>
+                                    {% if order.assigned_to %}
+                                        • Operador: {{ order.assigned_to.first_name|default:order.assigned_to.username }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div>
+                            <span class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase
+                                {% if order.status == 'in_progress' %}bg-[#1EA8D7]/20 text-[#38C5EE] border border-[#1EA8D7]/40
+                                {% elif order.status == 'completed' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+                                {% else %}bg-[#D4AF37]/20 text-[#F5E6BE] border border-[#D4AF37]/35{% endif %}">
+                                <span class="w-2 h-2 rounded-full {% if order.status == 'in_progress' %}bg-[#1EA8D7] animate-pulse{% elif order.status == 'completed' %}bg-emerald-400{% else %}bg-[#D4AF37]{% endif %}"></span>
+                                <span>{{ order.get_status_display }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Step Tracker (Progresso Visual) -->
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold text-[#9A9FA8] flex items-center justify-between">
+                            <span>Etapas do Atendimento:</span>
+                            <span class="text-[#1EA8D7]">
+                                {% if order.status == 'waiting' %}Fase 1 de 4 (Na Fila)
+                                {% elif order.status == 'in_progress' %}Fase 2 de 4 (Em Execução)
+                                {% elif order.status == 'completed' %}Fase 3 de 4 (Pronto para Retirada)
+                                {% elif order.status == 'delivered' %}Fase 4 de 4 (Entregue)
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-2 pt-2">
+                            <!-- Step 1: Recebido -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status in 'waiting,in_progress,completed,delivered' %}bg-[#1EA8D7]/20 border-[#1EA8D7]/40 text-[#38C5EE]{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="check" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">1. Na Fila</span>
+                            </div>
+
+                            <!-- Step 2: Em Lavagem -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status in 'in_progress,completed,delivered' %}bg-[#1EA8D7]/20 border-[#1EA8D7]/40 text-[#38C5EE]{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="spray-can" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">2. Lavagem</span>
+                            </div>
+
+                            <!-- Step 3: Pronto -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status in 'completed,delivered' %}bg-emerald-600/20 border-emerald-500/40 text-emerald-300{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="sparkles" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">3. Pronto</span>
+                            </div>
+
+                            <!-- Step 4: Entregue -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status == 'delivered' %}bg-emerald-600/20 border-emerald-500/40 text-emerald-300{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="key" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">4. Entregue</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vistoria Fotográfica (Antes & Depois) -->
+                    {% if selected_company.plan.has_inspections %}
+                    <div class="pt-4 border-t border-slate-800 space-y-3">
+                        <div class="flex items-center space-x-2 text-xs font-bold text-slate-300">
+                            <i data-lucide="camera" class="w-4 h-4 text-purple-400"></i>
+                            <span>Vistoria Fotográfica no Pátio (Antes & Depois):</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Foto Antes -->
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-2">
+                                <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">Foto Entrada (Antes)</span>
+                                <div class="h-40 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-800">
+                                    {% if order.before_photo and order.before_photo.image %}
+                                        <img src="{{ order.before_photo.image.url }}" alt="Foto Antes" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="text-slate-600 text-center p-4">
+                                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-1 opacity-40"></i>
+                                            <span class="text-[11px]">Foto registrada no checklist de entrada</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Foto Depois -->
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-2">
+                                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">Foto Entrega (Depois)</span>
+                                <div class="h-40 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-800">
+                                    {% if order.after_photo and order.after_photo.image %}
+                                        <img src="{{ order.after_photo.image.url }}" alt="Foto Depois" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="text-slate-600 text-center p-4">
+                                            <i data-lucide="sparkles" class="w-8 h-8 mx-auto mb-1 opacity-40"></i>
+                                            <span class="text-[11px]">Foto será capturada após a secagem</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="py-16 text-center bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 space-y-3">
+                <div class="w-16 h-16 rounded-3xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-500">
+                    <i data-lucide="car" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-slate-200 font-bold text-base">Nenhum veículo em atendimento agora</h3>
+                <p class="text-slate-400 text-xs max-w-md mx-auto">
+                    Assim que seu carro der entrada no lava-jato, você poderá acompanhar todo o processo e fotos de vistoria por aqui.
+                </p>
+                <button onclick="switchTab('services')" class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>Agendar um Serviço</span>
+                </button>
+            </div>
+        {% endif %}
+
+        <!-- Histórico Recente -->
+        {% if recent_orders %}
+        <div class="pt-6 space-y-3">
+            <h3 class="text-sm font-bold text-slate-300">Últimos Atendimentos Concluídos</h3>
+            <div class="space-y-2">
+                {% for ro in recent_orders %}
+                <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-3">
+                        <span class="font-mono font-bold text-slate-300 px-2 py-1 bg-slate-800 rounded-lg">{{ ro.vehicle.plate }}</span>
+                        <div>
+                            <div class="font-bold text-white">{{ ro.service_type.name }}</div>
+                            <div class="text-[11px] text-slate-400">{{ ro.created_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-emerald-400">R$ {{ ro.final_price|floatformat:2 }}</div>
+                        <span class="text-[10px] text-slate-400 uppercase">Concluído</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CLUBE DE FIDELIDADE (VIP)           -->
+    <!-- ========================================== -->
+    <section id="tab-pane-loyalty" class="tab-content hidden space-y-6">
+        
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="gift" class="w-5 h-5 text-pink-400"></i>
+                <span>Programa de Fidelidade VIP</span>
+            </h2>
+            <p class="text-xs text-slate-400">Acumule pontos em cada lavagem e troque por serviços exclusivos grátis</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Cartão Digital VIP -->
+            <div class="lg:col-span-2 card-gradient-pink rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="text-[11px] font-extrabold uppercase tracking-wider text-pink-300">Cartão de Fidelidade AutoFlow</div>
+                        <div class="text-xl sm:text-2xl font-black text-white mt-1">
+                            {{ user.get_full_name|default:user.username|default:"Cliente VIP" }}
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300">
+                        <i data-lucide="crown" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="my-6 space-y-2">
+                    <div class="flex items-baseline justify-between">
+                        <span class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                            {{ loyalty_account.points_balance|default:"0" }} <span class="text-lg font-bold text-pink-300">pts</span>
+                        </span>
+                        <span class="text-xs font-bold text-pink-200">
+                            Meta: {{ loyalty_target }} pts
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full h-3 bg-black/40 rounded-full overflow-hidden p-0.5 border border-pink-500/30">
+                        <div class="h-full bg-gradient-to-r from-pink-500 to-rose-400 rounded-full transition-all duration-500" style="width: {{ loyalty_progress }}%"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-pink-200 pt-2 border-t border-pink-500/20">
+                    <span>{{ selected_company.name }}</span>
+                    <span>Válido em todos os serviços credenciados</span>
+                </div>
+            </div>
+
+            <!-- Próximo Prêmio -->
+            <div class="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-4">
+                <div class="space-y-2">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <i data-lucide="award" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-bold text-base text-white">Recompensa Atual</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        {{ reward_description }}
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-center space-x-3">
+                    <i data-lucide="info" class="w-4 h-4 text-blue-400 flex-shrink-0"></i>
+                    <span>Ao atingir <strong>{{ loyalty_target }} pontos</strong>, avise nosso atendente para resgatar!</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Histórico de Pontos -->
+        {% if loyalty_account and loyalty_account.events.all %}
+        <div class="space-y-3 pt-4">
+            <h3 class="text-sm font-bold text-slate-300">Extrato de Pontos</h3>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
+                {% for event in loyalty_account.events.all %}
+                <div class="p-4 border-b border-slate-800/80 last:border-0 flex items-center justify-between text-xs">
+                    <div>
+                        <div class="font-bold text-white">{{ event.description }}</div>
+                        <div class="text-[11px] text-slate-500">{{ event.created_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <div class="font-extrabold {% if event.points > 0 %}text-emerald-400{% else %}text-rose-400{% endif %} text-sm">
+                        {% if event.points > 0 %}+{% endif %}{{ event.points }} pts
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 4: MINHA GARAGEM (MEUS VEÍCULOS)       -->
+    <!-- ========================================== -->
+    <section id="tab-pane-garage" class="tab-content hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="key" class="w-5 h-5 text-[#D4AF37]"></i>
+                    <span>Minha Garagem Digital</span>
+                </h2>
+                <p class="text-xs text-[#9A9FA8]">Cadastre e gerencie os veículos vinculados à sua conta para agendamento rápido</p>
+            </div>
+
+            {% if user.is_authenticated %}
+            <button onclick="toggleNewVehicleForm()" class="gold-btn px-4 py-2.5 rounded-xl text-xs font-black shadow-lg flex items-center justify-center space-x-2 transition-all">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Cadastrar Novo Veículo</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Formulário Oculto de Cadastro Rápido de Carro -->
+        <div id="newVehicleCard" class="hidden rounded-3xl carbon-card p-6 shadow-2xl space-y-4 animate-fade-in border border-[#1EA8D7]/40">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm text-white flex items-center space-x-2">
+                    <i data-lucide="plus" class="w-4 h-4 text-[#1EA8D7]"></i>
+                    <span>Adicionar Carro à Garagem</span>
+                </h3>
+                <button onclick="toggleNewVehicleForm()" class="text-[#9A9FA8] hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form action="{% url 'portal:add_vehicle' %}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Placa *</label>
+                    <input type="text" name="plate" placeholder="Ex: ABC1D23" required maxlength="10"
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs font-mono uppercase focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Marca *</label>
+                    <input type="text" name="brand" placeholder="Ex: BMW, Toyota" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Modelo *</label>
+                    <input type="text" name="model" placeholder="Ex: 320i, Corolla" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Cor</label>
+                    <input type="text" name="color" placeholder="Ex: Preto, Prata"
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-1 flex items-end">
+                    <button type="submit" class="gold-btn w-full py-2 px-4 rounded-xl text-xs font-black transition-all">
+                        Salvar Carro
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Veículos Grid -->
+        {% if vehicles %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for v in vehicles %}
+            <div class="rounded-3xl carbon-card p-5 space-y-4 hover:border-[#D4AF37] transition-colors">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-2xl icon-badge-3d flex items-center justify-center text-[#D4AF37]">
+                            <i data-lucide="car" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-black uppercase bg-[#121519] text-[#D4AF37] border border-[#A3734C]/30">
+                                {{ v.plate }}
+                            </span>
+                            <h4 class="font-bold text-white text-base mt-1">{{ v.brand }} {{ v.model }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-[#9A9FA8] space-y-1 pt-2 border-t border-[#A3734C]/20">
+                    <div class="flex justify-between">
+                        <span>Cor:</span>
+                        <span class="text-[#F5F5F7] font-medium">{{ v.color|default:"Não informada" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Categoria:</span>
+                        <span class="text-[#F5F5F7] font-medium uppercase">{{ v.get_vehicle_type_display|default:v.vehicle_type }}</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center space-x-2">
+                    <button onclick="openBookingModalForVehicle('{{ v.id }}', '{{ v.plate }}')" class="flex-1 py-2 px-3 rounded-xl bg-[#1EA8D7]/15 hover:bg-[#1EA8D7]/25 text-[#38C5EE] border border-[#1EA8D7]/30 font-bold text-xs flex items-center justify-center space-x-1 transition-colors">
+                        <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+                        <span>Agendar para Este</span>
+                    </button>
+                    <a href="{% url 'portal:delete_vehicle' v.id %}" onclick="return confirm('Deseja realmente remover este veículo da sua garagem?')" class="p-2 rounded-xl bg-[#1E232A] hover:bg-rose-900/40 text-[#9A9FA8] hover:text-rose-300 border border-[#A3734C]/30 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-16 text-center bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 space-y-3">
+            <div class="w-16 h-16 rounded-3xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-500">
+                <i data-lucide="key" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-slate-200 font-bold text-base">Nenhum veículo cadastrado ainda</h3>
+            <p class="text-slate-400 text-xs max-w-md mx-auto">
+                Adicione seu carro para agilizar o processo de agendamento e acompanhar o histórico de revisões.
+            </p>
+            {% if user.is_authenticated %}
+            <button onclick="toggleNewVehicleForm()" class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Cadastrar Primeiro Veículo</span>
+            </button>
+            {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'portal:home' %}" class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                <span>Fazer Login para Salvar Carros</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 5: MEUS AGENDAMENTOS                   -->
+    <!-- ========================================== -->
+    <section id="tab-pane-appointments" class="tab-content hidden space-y-6">
+        
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="calendar-clock" class="w-5 h-5 text-blue-400"></i>
+                <span>Histórico de Agendamentos</span>
+            </h2>
+            <p class="text-xs text-slate-400">Consulte seus agendamentos confirmados e pendentes</p>
+        </div>
+
+        {% if appointments %}
+        <div class="space-y-3">
+            {% for appt in appointments %}
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-colors">
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-950/60 border border-blue-500/30 flex flex-col items-center justify-center text-blue-400 flex-shrink-0">
+                        <span class="text-xs font-black">{{ appt.scheduled_date|date:"d" }}</span>
+                        <span class="text-[9px] uppercase font-bold">{{ appt.scheduled_date|date:"M" }}</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-bold text-white text-sm sm:text-base">{{ appt.service_type.name }}</h4>
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase
+                                {% if appt.status == 'confirmed' %}bg-emerald-500/20 text-emerald-300
+                                {% elif appt.status == 'arrived' %}bg-blue-500/20 text-blue-300
+                                {% elif appt.status == 'cancelled' %}bg-rose-500/20 text-rose-300
+                                {% else %}bg-amber-500/20 text-amber-300{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
+                        </div>
+
+                        <div class="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                            <span><i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1 text-slate-500"></i>{{ appt.scheduled_time|time:"H:i" }}</span>
+                            <span><i data-lucide="car" class="w-3.5 h-3.5 inline mr-1 text-slate-500"></i>{{ appt.vehicle.plate }} ({{ appt.vehicle.brand }} {{ appt.vehicle.model }})</span>
+                            <span><i data-lucide="store" class="w-3.5 h-3.5 inline mr-1 text-slate-500"></i>{{ appt.company.name }}</span>
+                        </div>
+
+                        {% if appt.notes %}
+                        <p class="text-[11px] text-slate-400 italic">"{{ appt.notes }}"</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                {% if appt.status in 'pending,confirmed' %}
+                <div>
+                    <a href="{% url 'portal:cancel_appointment' appt.id %}" onclick="return confirm('Deseja realmente cancelar este agendamento?')"
+                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 border border-slate-700 text-xs font-semibold flex items-center space-x-1 transition-colors">
+                        <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                        <span>Cancelar</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-16 text-center bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 space-y-3">
+            <div class="w-16 h-16 rounded-3xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-500">
+                <i data-lucide="calendar" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-slate-200 font-bold text-base">Você não possui agendamentos</h3>
+            <p class="text-slate-400 text-xs max-w-md mx-auto">
+                Escolha um serviço no catálogo para agendar um horário para o seu carro.
+            </p>
+            <button onclick="switchTab('services')" class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>Ver Serviços</span>
+            </button>
+        </div>
+        {% endif %}
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 6: SOBRE O LAVA-JATO                   -->
+    <!-- ========================================== -->
+    <section id="tab-pane-about" class="tab-content hidden space-y-6">
+        
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="info" class="w-5 h-5 text-purple-400"></i>
+                <span>Sobre {{ selected_company.name }}</span>
+            </h2>
+            <p class="text-xs text-slate-400">Informações de contato, localização e diferenciais da unidade</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="rounded-3xl bg-slate-900 border border-slate-800 p-6 space-y-4">
+                <h3 class="font-bold text-base text-white">Localização & Contato</h3>
+                
+                <div class="space-y-3 text-xs">
+                    <div class="flex items-start space-x-3 text-slate-300">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <div class="font-bold text-white">Endereço:</div>
+                            <p class="text-slate-400">{{ selected_company.address|default:"Av. Paulista, 1000 - Bela Vista, São Paulo - SP" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 text-slate-300">
+                        <i data-lucide="phone" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
+                        <div>
+                            <div class="font-bold text-white">Telefone / WhatsApp:</div>
+                            <p class="text-slate-400">{{ selected_company.phone|default:"(11) 98888-7777" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 text-slate-300">
+                        <i data-lucide="clock" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+                        <div>
+                            <div class="font-bold text-white">Horário de Funcionamento:</div>
+                            <p class="text-slate-400">Segunda a Sábado: 08:00 às 18:00</p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if selected_company.phone %}
+                <div class="pt-3">
+                    <a href="https://wa.me/55{{ selected_company.phone|cut:' '|cut:'-'|cut:'('|cut:')' }}" target="_blank"
+                        class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-2 transition-colors">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span>Falar no WhatsApp</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recursos e Certificações -->
+            <div class="rounded-3xl bg-slate-900 border border-slate-800 p-6 space-y-4">
+                <h3 class="font-bold text-base text-white">Tecnologia & Benefícios Ativos</h3>
+                
+                <div class="space-y-2.5 text-xs">
+                    <div class="flex items-center space-x-2.5 text-slate-300">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Agendamento 100% Online via Web e App</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2.5 text-slate-300">
+                        <i data-lucide="{% if selected_company.plan.has_loyalty %}check-circle{% else %}circle-off{% endif %}" class="w-4 h-4 {% if selected_company.plan.has_loyalty %}text-emerald-400{% else %}text-slate-600{% endif %}"></i>
+                        <span>Clube de Pontos e Recompensas VIP</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2.5 text-slate-300">
+                        <i data-lucide="{% if selected_company.plan.has_inspections %}check-circle{% else %}circle-off{% endif %}" class="w-4 h-4 {% if selected_company.plan.has_inspections %}text-emerald-400{% else %}text-slate-600{% endif %}"></i>
+                        <span>Vistoria Fotográfica com Fotos Antes & Depois</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2.5 text-slate-300">
+                        <i data-lucide="{% if selected_company.plan.has_monthly_billing %}check-circle{% else %}circle-off{% endif %}" class="w-4 h-4 {% if selected_company.plan.has_monthly_billing %}text-emerald-400{% else %}text-slate-600{% endif %}"></i>
+                        <span>Faturamento Corporativo & Frotas</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Plano da Unidade:</span>
+                    <span class="font-extrabold text-blue-400 uppercase">{{ selected_company.plan.name }}</span>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ========================================== -->
+<!-- MODAL DE AGENDAMENTO (BOTTOM SHEET / DIALOG)-->
+<!-- ========================================== -->
+<div id="bookingModal" class="hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md transition-opacity">
+    <div class="carbon-card border border-[#A3734C]/40 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 pb-12 sm:pb-6 shadow-2xl space-y-5 animate-slide-up max-h-[88vh] overflow-y-auto">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-[#A3734C]/30">
+            <div>
+                <span class="text-[10px] font-bold text-[#1EA8D7] uppercase tracking-wider">Novo Agendamento</span>
+                <h3 id="modalServiceName" class="text-base sm:text-lg font-bold text-white">Nome do Serviço</h3>
+            </div>
+            <button type="button" onclick="closeBookingModal()" class="p-1.5 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-[#9A9FA8] hover:text-white hover:border-[#D4AF37] transition-all">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        {% if user.is_authenticated %}
+        <form action="{% url 'portal:book_appointment' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="company_id" value="{{ selected_company.id }}">
+            <input type="hidden" name="service_type_id" id="modalServiceId" value="">
+
+            <!-- Seleção de Veículo -->
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-[#F5E6BE]">Escolha o seu Veículo:</label>
+                {% if vehicles %}
+                <select name="vehicle_id" id="bookingVehicleSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-[#121519] border border-[#A3734C]/35 text-white text-xs font-semibold focus:border-[#1EA8D7] focus:outline-none">
+                    {% for v in vehicles %}
+                    <option value="{{ v.id }}">{{ v.plate }} - {{ v.brand }} {{ v.model }} ({{ v.color }})</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <div class="p-3 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#F5E6BE] text-xs mb-2">
+                    Você ainda não tem veículos cadastrados. Preencha a placa abaixo para cadastrar agora mesmo:
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" name="new_vehicle_plate" placeholder="Placa (Ex: ABC1D23)" required maxlength="10"
+                        class="px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/35 text-[#D4AF37] text-xs font-mono uppercase focus:border-[#1EA8D7]">
+                    <input type="text" name="new_vehicle_model" placeholder="Modelo (Ex: Civic)" required
+                        class="px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/35 text-white text-xs focus:border-[#1EA8D7]">
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Data & Horário -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-[#F5E6BE] mb-1">Data:</label>
+                    <input type="date" name="scheduled_date" id="bookingDateInput" value="{{ today_str }}" min="{{ today_str }}" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/35 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-[#F5E6BE] mb-1">Horário:</label>
+                    <select name="scheduled_time" class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/35 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                        <option value="08:00">08:00</option>
+                        <option value="09:00">09:00</option>
+                        <option value="10:00" selected>10:00</option>
+                        <option value="11:00">11:00</option>
+                        <option value="13:00">13:00</option>
+                        <option value="14:00">14:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="16:00">16:00</option>
+                        <option value="17:00">17:00</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div>
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-1">Observações especiais (opcional):</label>
+                <textarea name="notes" rows="2" placeholder="Ex: Cuidado com insulfilm novo, foco nas rodas..."
+                    class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/35 text-white text-xs focus:border-[#1EA8D7] focus:outline-none resize-none"></textarea>
+            </div>
+
+            <!-- Resumo e Botão de Envio -->
+            <div class="p-3.5 rounded-2xl bg-[#121519] border border-[#A3734C]/35 flex items-center justify-between text-xs">
+                <div>
+                    <span class="text-[#9A9FA8]">Total Previsto:</span>
+                    <div id="modalServicePrice" class="text-base font-black text-[#D4AF37]">R$ 0,00</div>
+                </div>
+                <div class="text-right">
+                    <span id="modalLoyaltyBadge" class="text-[#38C5EE] font-bold text-[11px] block">+0 pts VIP</span>
+                    <span class="text-[#9A9FA8] text-[10px]">Pagamento no local</span>
+                </div>
+            </div>
+
+            <button type="submit" class="gold-btn w-full py-3.5 px-4 rounded-xl text-[#121519] font-black text-sm shadow-xl flex items-center justify-center space-x-2 transition-all">
+                <i data-lucide="check-circle" class="w-4 h-4 text-[#121519]"></i>
+                <span>Confirmar Agendamento</span>
+            </button>
+        </form>
+        {% else %}
+        <!-- Visitante / Não Autenticado -->
+        <div class="py-6 text-center space-y-4">
+            <div class="w-12 h-12 rounded-2xl icon-badge-3d text-[#D4AF37] flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-white text-base">Identificação Necessária</h4>
+                <p class="text-xs text-[#9A9FA8] max-w-xs mx-auto mt-1">
+                    Faça login na sua conta de motorista para selecionar o veículo e agendar este serviço.
+                </p>
+            </div>
+            <a href="{% url 'accounts:login' %}?next={% url 'portal:home' %}" class="gold-btn inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg transition-all">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                <span>Entrar na Minha Conta</span>
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openBookingModal(serviceId, serviceName, price, duration, loyaltyPoints) {
+        document.getElementById('modalServiceId').value = serviceId;
+        document.getElementById('modalServiceName').innerText = serviceName;
+        document.getElementById('modalServicePrice').innerText = 'R$ ' + price;
+        
+        const loyaltyEl = document.getElementById('modalLoyaltyBadge');
+        if (loyaltyEl) {
+            loyaltyEl.innerText = loyaltyPoints > 0 ? '+' + loyaltyPoints + ' pts VIP' : '';
+        }
+
+        const modal = document.getElementById('bookingModal');
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        lucide.createIcons();
+    }
+
+    function openBookingModalForVehicle(vehicleId, vehiclePlate) {
+        // Alterna para serviços e abre o modal do primeiro serviço
+        switchTab('services');
+        const firstServiceBtn = document.querySelector('.service-card button');
+        if (firstServiceBtn) {
+            firstServiceBtn.click();
+            setTimeout(() => {
+                const select = document.getElementById('bookingVehicleSelect');
+                if (select) select.value = vehicleId;
+            }, 50);
+        }
+    }
+
+    function closeBookingModal() {
+        const modal = document.getElementById('bookingModal');
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function toggleNewVehicleForm() {
+        const card = document.getElementById('newVehicleCard');
+        card.classList.toggle('hidden');
+        if (!card.classList.contains('hidden')) {
+            card.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function filterServices(category) {
+        const cards = document.querySelectorAll('.service-card');
+        cards.forEach(c => {
+            if (category === 'all' || c.getAttribute('data-category') === category) {
+                c.style.display = 'flex';
+            } else {
+                c.style.display = 'none';
+            }
+        });
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('bookingModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeBookingModal();
+        }
+    });
+</script>
+{% endblock %}

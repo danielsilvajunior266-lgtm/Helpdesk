@@ -30,6 +30,67 @@ class Customer(TenantModel):
     def __str__(self):
         return f"{self.name} ({self.get_billing_type_display()})"
 
+    @property
+    def is_vip(self) -> bool:
+        """
+        Regra de Fidelidade VIP do Estabelecimento:
+        1. O cliente atinge o status VIP quando leva o veículo ao menos 1 vez por mês
+           durante 3 meses consecutivos em ordens de serviço concluídas ('completed')
+           neste lava-jato específico.
+        2. Perda de VIP: Se o cliente ficar 2 meses ou mais sem realizar nenhuma lavagem/serviço,
+           o status e a insígnia VIP desaparecem para o dono do lava-jato.
+        """
+        from apps.orders.models import ServiceOrder
+        from django.utils import timezone
+
+        completed_orders = ServiceOrder.objects.filter(
+            customer=self,
+            company=self.company,
+            status='completed'
+        ).order_by('created_at')
+
+        if not completed_orders.exists():
+            return False
+
+        # Extrair anos e meses únicos de visitas
+        # Representamos cada mês como um índice linear: ano * 12 + mês
+        visit_months = sorted(list(set(
+            order.created_at.year * 12 + order.created_at.month
+            for order in completed_orders
+        )))
+
+        # Verificar se houve ao menos uma sequência de 3 meses consecutivos
+        has_consecutive_3_months = False
+        consecutive_count = 1
+        for i in range(1, len(visit_months)):
+            if visit_months[i] == visit_months[i - 1] + 1:
+                consecutive_count += 1
+                if consecutive_count >= 3:
+                    has_consecutive_3_months = True
+            elif visit_months[i] == visit_months[i - 1]:
+                continue
+            else:
+                consecutive_count = 1
+
+        if not has_consecutive_3_months:
+            return False
+
+        # Verificar inatividade (2 meses ou mais sem visitar)
+        last_order = completed_orders.last()
+        if not last_order:
+            return False
+
+        now = timezone.now()
+        current_month_index = now.year * 12 + now.month
+        last_visit_month_index = last_order.created_at.year * 12 + last_order.created_at.month
+
+        months_since_last_visit = current_month_index - last_visit_month_index
+
+        if months_since_last_visit >= 2:
+            return False
+
+        return True
+
 
 class Vehicle(TenantModel):
     VEHICLE_TYPE_CHOICES = [

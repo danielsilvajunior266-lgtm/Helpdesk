@@ -4,7 +4,7 @@
 {% block header_title %}Quadro do Pátio (Kanban em Tempo Real){% endblock %}
 
 {% block top_actions %}
-<a href="{% url 'orders:create' %}" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 transition-all flex items-center gap-2">
+<a href="{% url 'orders:create' %}" class="gold-btn px-4 py-2.5 rounded-xl text-xs font-black shadow-lg transition-all flex items-center gap-2">
     <i data-lucide="plus-circle" class="w-4 h-4"></i>
     <span>Dar Entrada no Veículo</span>
 </a>
@@ -12,45 +12,49 @@
 
 {% block content %}
 <div class="space-y-6">
-    <!-- Top KPI Bar -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+    <!-- Top KPI Bar (Cards de Resumo com Ícones 3D Metalizados) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- 1. Aguardando Início -->
+        <div class="kpi-card group p-5 flex items-center justify-between">
             <div>
-                <p class="text-xs text-slate-400 font-medium">Aguardando Início</p>
-                <h3 class="text-2xl font-extrabold text-amber-400 mt-1">{{ waiting_orders.count }}</h3>
+                <p class="text-xs text-[#9A9FA8] font-semibold uppercase tracking-wider">Aguardando Início</p>
+                <h3 class="text-3xl font-black gold-gradient-text mt-1.5">{{ waiting_orders.count }}</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <i data-lucide="clock" class="w-5 h-5"></i>
+            <div class="w-12 h-12 rounded-2xl icon-badge-3d flex items-center justify-center flex-shrink-0">
+                <i data-lucide="clock" class="w-6 h-6 icon-float"></i>
             </div>
         </div>
 
-        <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+        <!-- 2. Em Lavagem / Estética -->
+        <div class="kpi-card group p-5 flex items-center justify-between">
             <div>
-                <p class="text-xs text-slate-400 font-medium">Em Lavagem / Estética</p>
-                <h3 class="text-2xl font-extrabold text-blue-400 mt-1">{{ in_progress_orders.count }}</h3>
+                <p class="text-xs text-[#9A9FA8] font-semibold uppercase tracking-wider">Em Estética / Pátio</p>
+                <h3 class="text-3xl font-black text-[#1EA8D7] mt-1.5 drop-shadow-[0_0_12px_rgba(30,168,215,0.4)]">{{ in_progress_orders.count }}</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                <i data-lucide="droplet" class="w-5 h-5"></i>
+            <div class="w-12 h-12 rounded-2xl icon-badge-3d flex items-center justify-center flex-shrink-0">
+                <i data-lucide="sparkles" class="w-6 h-6 icon-float"></i>
             </div>
         </div>
 
-        <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+        <!-- 3. Pronto p/ Entrega -->
+        <div class="kpi-card group p-5 flex items-center justify-between">
             <div>
-                <p class="text-xs text-slate-400 font-medium">Pronto p/ Entrega</p>
-                <h3 class="text-2xl font-extrabold text-emerald-400 mt-1">{{ completed_orders.count }}</h3>
+                <p class="text-xs text-[#9A9FA8] font-semibold uppercase tracking-wider">Pronto p/ Entrega</p>
+                <h3 class="text-3xl font-black text-emerald-400 mt-1.5 drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]">{{ completed_orders.count }}</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <div class="w-12 h-12 rounded-2xl icon-badge-3d flex items-center justify-center flex-shrink-0">
+                <i data-lucide="shield-check" class="w-6 h-6 icon-float"></i>
             </div>
         </div>
 
-        <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+        <!-- 4. Entregues Hoje -->
+        <div class="kpi-card group p-5 flex items-center justify-between">
             <div>
-                <p class="text-xs text-slate-400 font-medium">Entregues Hoje</p>
-                <h3 class="text-2xl font-extrabold text-purple-400 mt-1">{{ delivered_orders.count }}</h3>
+                <p class="text-xs text-[#9A9FA8] font-semibold uppercase tracking-wider">Entregues Hoje</p>
+                <h3 class="text-3xl font-black text-[#F5E6BE] mt-1.5">{{ delivered_orders.count }}</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                <i data-lucide="key" class="w-5 h-5"></i>
+            <div class="w-12 h-12 rounded-2xl icon-badge-3d flex items-center justify-center flex-shrink-0">
+                <i data-lucide="key" class="w-6 h-6 icon-float"></i>
             </div>
         </div>
     </div>

@@ -5,30 +5,30 @@
 
 {% block content %}
 <div class="max-w-xl mx-auto">
-    <div class="glass-panel p-8 rounded-3xl border border-slate-800 shadow-xl">
+    <div class="carbon-card p-8 rounded-3xl">
         <form method="post" class="space-y-5">
             {% csrf_token %}
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nome do Serviço</label>
-                <input type="text" name="name" required placeholder="Ex: Lavagem Completa, Polimento Técnico, Higienização Interna" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-1.5 uppercase tracking-wider">Nome do Serviço</label>
+                <input type="text" name="name" required placeholder="Ex: Lavagem Completa, Polimento Técnico, Higienização Interna" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white placeholder-[#9A9FA8] focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Preço Padrão (R$)</label>
-                    <input type="number" step="0.01" name="default_price" required placeholder="50.00" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-[#F5E6BE] mb-1.5 uppercase tracking-wider">Preço Padrão (R$)</label>
+                    <input type="number" step="0.01" name="default_price" required placeholder="50.00" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white placeholder-[#9A9FA8] focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Duração Média (min)</label>
-                    <input type="number" name="estimated_duration_minutes" value="45" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-[#F5E6BE] mb-1.5 uppercase tracking-wider">Duração Média (min)</label>
+                    <input type="number" name="estimated_duration_minutes" value="45" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white placeholder-[#9A9FA8] focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Categoria</label>
-                <select name="category" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-1.5 uppercase tracking-wider">Categoria</label>
+                <select name="category" class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all">
                     <option value="">Sem categoria específica</option>
                     {% for cat in categories %}
                     <option value="{{ cat.id }}">{{ cat.name }}</option>
@@ -37,13 +37,13 @@
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Descrição dos Processos</label>
-                <textarea name="description" rows="3" placeholder="Detalhes do que está incluso no serviço..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                <label class="block text-xs font-bold text-[#F5E6BE] mb-1.5 uppercase tracking-wider">Descrição dos Processos</label>
+                <textarea name="description" rows="3" placeholder="Detalhes do que está incluso no serviço..." class="w-full px-4 py-3 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-white placeholder-[#9A9FA8] focus:ring-2 focus:ring-[#1EA8D7] focus:border-[#1EA8D7] focus:outline-none transition-all"></textarea>
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                <a href="{% url 'services:list' %}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors">Cancelar</a>
-                <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/25 transition-all">
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#A3734C]/25">
+                <a href="{% url 'services:list' %}" class="px-5 py-2.5 rounded-xl bg-[#1E232A] hover:bg-[#252B33] text-[#9A9FA8] hover:text-white font-semibold text-sm border border-[#A3734C]/30 transition-all">Cancelar</a>
+                <button type="submit" class="gold-btn px-6 py-2.5 rounded-xl text-sm font-black shadow-lg transition-all">
                     Salvar Serviço
                 </button>
             </div>
