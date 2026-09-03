@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Clientes & Garagem - AutoFlow{% endblock %}
+{% block header_title %}Clientes & Veículos Cadastrados{% endblock %}
+
+{% block top_actions %}
+<a href="{% url 'customers:create' %}" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 transition-all flex items-center gap-2">
+    <i data-lucide="user-plus" class="w-4 h-4"></i>
+    <span>Novo Cliente</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold">Cliente</th>
+                        <th class="px-6 py-4 font-semibold">Contato</th>
+                        <th class="px-6 py-4 font-semibold">Tipo Faturamento</th>
+                        <th class="px-6 py-4 font-semibold">Veículos na Garagem</th>
+                        <th class="px-6 py-4 font-semibold text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for customer in customers %}
+                    <tr class="hover:bg-slate-900/40 transition-colors">
+                        <td class="px-6 py-4">
+                            <strong class="text-white text-sm block">{{ customer.name }}</strong>
+                            <span class="text-slate-500 text-[11px]">{{ customer.document|default:"Documento não informado" }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-slate-300 block">{{ customer.phone }}</span>
+                            <span class="text-slate-500 text-[11px]">{{ customer.email }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold
+                                {% if customer.billing_type == 'monthly' %}
+                                    bg-indigo-500/10 text-indigo-400 border border-indigo-500/20
+                                {% else %}
+                                    bg-slate-800 text-slate-300
+                                {% endif %}">
+                                {{ customer.get_billing_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1.5 items-center">
+                                {% for v in customer.vehicles.all %}
+                                <span class="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-200 font-mono text-[11px] font-bold uppercase">
+                                    {{ v.plate }} ({{ v.model }})
+                                </span>
+                                {% empty %}
+                                <span class="text-slate-500 italic text-[11px]">Nenhum veículo</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'customers:vehicle_create' customer.id %}" class="px-3 py-1.5 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>Adicionar Veículo</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            Nenhum cliente cadastrado ainda.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

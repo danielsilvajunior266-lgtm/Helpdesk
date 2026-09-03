@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AutoFlow SaaS - Gestão de Estética Automotiva & Lava-Jato{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef8ff',
+                            100: '#d8eeff',
+                            200: '#b9e2fe',
+                            300: '#89d1fd',
+                            400: '#52b5fa',
+                            500: '#2b97f4',
+                            600: '#1578e3',
+                            700: '#1060c5',
+                            800: '#124ea0',
+                            900: '#14437f',
+                            950: '#0d2a52',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full text-slate-100 bg-slate-950 flex overflow-hidden" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900/90 border-r border-slate-800/80 flex flex-col flex-shrink-0 z-20">
+        <!-- Logo & Brand -->
+        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800/80">
+            <a href="{% url 'orders:kanban' %}" class="flex items-center space-x-3 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-base tracking-tight text-white block">AutoFlow</span>
+                    <span class="text-[10px] text-blue-400 font-semibold tracking-wider uppercase block -mt-1">SaaS Multi-Tenant</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Current Tenant Badge -->
+        {% if current_company %}
+        <div class="px-4 py-3 mx-3 my-3 rounded-xl bg-slate-800/50 border border-slate-700/40">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-white truncate max-w-[130px]">{{ current_company.name }}</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase
+                    {% if current_company.plan.code == 'premium' %}
+                        bg-amber-500/20 text-amber-300 border border-amber-500/30
+                    {% elif current_company.plan.code == 'pro' %}
+                        bg-blue-500/20 text-blue-300 border border-blue-500/30
+                    {% else %}
+                        bg-slate-700 text-slate-300
+                    {% endif %}">
+                    {{ current_company.plan.name }}
+                </span>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Pátio Operacional Ativo</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+            <div class="px-3 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Operacional</div>
+            
+            <a href="{% url 'orders:kanban' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'orders' and request.resolver_match.url_name == 'kanban' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="layout-kanban" class="w-4 h-4"></i>
+                <span>Quadro do Pátio</span>
+            </a>
+
+            <a href="{% url 'orders:create' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'orders' and request.resolver_match.url_name == 'create' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-400"></i>
+                <span>Nova Ordem (Entrada)</span>
+            </a>
+
+            <a href="{% url 'appointments:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'appointments' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+                <span>Agendamentos</span>
+            </a>
+
+            <div class="pt-4 px-3 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Cadastros</div>
+
+            <a href="{% url 'customers:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'customers' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Clientes & Veículos</span>
+            </a>
+
+            <a href="{% url 'services:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'services' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="tags" class="w-4 h-4"></i>
+                <span>Catálogo de Serviços</span>
+            </a>
+
+            <div class="pt-4 px-3 pb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Gestão & Módulos</div>
+
+            <a href="{% url 'finance:cash_book' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'finance' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+                <span>Livro Caixa</span>
+            </a>
+
+            <!-- Módulo Frotas (Plano Pro/Premium) -->
+            {% if tenant_features.has_monthly_billing %}
+            <a href="{% url 'billing:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'billing' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="receipt" class="w-4 h-4 text-indigo-400"></i>
+                <span>Faturamento Frotas</span>
+            </a>
+            {% endif %}
+
+            <!-- Módulo Fidelidade (Plano Pro/Premium) -->
+            {% if tenant_features.has_loyalty %}
+            <a href="{% url 'loyalty:dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'loyalty' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="gift" class="w-4 h-4 text-pink-400"></i>
+                <span>Clube Fidelidade</span>
+            </a>
+            {% endif %}
+
+            <!-- Módulo Comissões (Plano Premium) -->
+            {% if tenant_features.has_commissions %}
+            <a href="{% url 'commissions:list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'commissions' %}bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/60{% endif %}">
+                <i data-lucide="percent" class="w-4 h-4 text-amber-400"></i>
+                <span>Comissões Operadores</span>
+            </a>
+            {% endif %}
+        </nav>
+
+        <!-- User profile footer -->
+        <div class="p-3 border-t border-slate-800/80">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/30">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold flex items-center justify-center text-xs flex-shrink-0">
+                        {{ user.first_name|default:user.username|make_list|first|upper }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-white truncate">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="text-[10px] text-slate-400 truncate">{{ user.get_role_display }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'accounts:logout' %}" title="Sair" class="text-slate-400 hover:text-rose-400 transition-colors p-1">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
+        <!-- Top bar -->
+        <header class="h-16 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between px-8 z-10">
+            <div class="flex items-center gap-4">
+                <h1 class="text-lg font-bold text-white tracking-tight">{% block header_title %}Painel Operacional{% endblock %}</h1>
+            </div>
+
+            <div class="flex items-center gap-3">
+                {% block top_actions %}{% endblock %}
+                {% if user.is_staff or user.role == 'superadmin' %}
+                <a href="/admin/" target="_blank" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+                    <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>Django Admin</span>
+                </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="px-8 pt-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-3.5 rounded-xl text-sm font-medium flex items-center justify-between border
+                {% if message.tags == 'success' %}
+                    bg-emerald-500/10 text-emerald-300 border-emerald-500/20
+                {% elif message.tags == 'error' %}
+                    bg-rose-500/10 text-rose-300 border-rose-500/20
+                {% elif message.tags == 'warning' %}
+                    bg-amber-500/10 text-amber-300 border-amber-500/20
+                {% else %}
+                    bg-blue-500/10 text-blue-300 border-blue-500/20
+                {% endif %}">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    <span>{{ message }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-xs opacity-60 hover:opacity-100">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Body content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        document.body.addEventListener('htmx:afterSwap', function() {
+            lucide.createIcons();
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

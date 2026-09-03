@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Veículo - {{ customer.name }}{% endblock %}
+{% block header_title %}Adicionar Veículo para {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="glass-panel p-8 rounded-3xl border border-slate-800 shadow-xl">
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Placa do Veículo</label>
+                <input type="text" name="plate" required placeholder="ABC1D23 ou BRA2E19" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-base uppercase placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Marca / Fabricante</label>
+                    <input type="text" name="brand" required placeholder="Toyota, Honda, VW..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Modelo</label>
+                    <input type="text" name="model" required placeholder="Corolla, Civic, Gol..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Cor</label>
+                    <input type="text" name="color" placeholder="Preto, Prata, Branco..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Porte / Tipo</label>
+                    <select name="vehicle_type" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="hatch">Hatch</option>
+                        <option value="sedan" selected>Sedan</option>
+                        <option value="suv">SUV</option>
+                        <option value="pickup">Picape</option>
+                        <option value="moto">Motocicleta</option>
+                        <option value="van">Van / Utilitário</option>
+                        <option value="truck">Caminhão</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <a href="{% url 'customers:list' %}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors">Cancelar</a>
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/25 transition-all">
+                    Adicionar à Garagem
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+<div id="kanban-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+    <!-- 1. Aguardando -->
+    <div class="flex flex-col bg-slate-900/60 rounded-2xl border border-slate-800 p-4 min-h-[600px]">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                <h3 class="font-bold text-sm text-white">Aguardando</h3>
+            </div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ waiting_orders.count }}</span>
+        </div>
+
+        <div class="flex-1 space-y-3 overflow-y-auto">
+            {% for order in waiting_orders %}
+            <div class="glass-panel p-4 rounded-xl border border-slate-800/80 shadow-md hover:border-slate-700 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="px-2 py-0.5 text-xs font-mono font-black tracking-wider rounded-md bg-slate-800 border border-slate-700 text-white uppercase">{{ order.vehicle.plate }}</span>
+                    <span class="text-[11px] font-bold text-emerald-400">R$ {{ order.final_price }}</span>
+                </div>
+                <h4 class="font-bold text-sm text-slate-100">{{ order.vehicle.brand }} {{ order.vehicle.model }}</h4>
+                <p class="text-xs text-slate-400 mb-2">{{ order.customer.name }}</p>
+                <div class="text-[11px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded-md mb-3 flex items-center gap-1.5">
+                    <i data-lucide="tag" class="w-3 h-3"></i>
+                    <span class="truncate font-medium">{{ order.service_type.name }}</span>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                    <a href="{% url 'orders:detail' order.id %}" class="text-[11px] text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver OS
+                    </a>
+                    <button hx-post="{% url 'orders:update_status' order.id %}?status=in_progress"
+                            hx-target="#kanban-container"
+                            hx-swap="outerHTML"
+                            class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1">
+                        <span>Iniciar</span>
+                        <i data-lucide="play" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="h-40 flex flex-col items-center justify-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl p-4 text-center">
+                <i data-lucide="inbox" class="w-6 h-6 mb-2 stroke-[1.5]"></i>
+                <span>Nenhum veículo aguardando no pátio</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 2. Em Execução / Lavagem -->
+    <div class="flex flex-col bg-slate-900/60 rounded-2xl border border-slate-800 p-4 min-h-[600px]">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-blue-400 animate-pulse"></span>
+                <h3 class="font-bold text-sm text-white">Em Lavagem</h3>
+            </div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">{{ in_progress_orders.count }}</span>
+        </div>
+
+        <div class="flex-1 space-y-3 overflow-y-auto">
+            {% for order in in_progress_orders %}
+            <div class="glass-panel p-4 rounded-xl border border-blue-500/30 shadow-md shadow-blue-500/5 hover:border-blue-500/50 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="px-2 py-0.5 text-xs font-mono font-black tracking-wider rounded-md bg-blue-900/40 border border-blue-500/40 text-blue-300 uppercase">{{ order.vehicle.plate }}</span>
+                    <span class="text-[11px] font-bold text-emerald-400">R$ {{ order.final_price }}</span>
+                </div>
+                <h4 class="font-bold text-sm text-slate-100">{{ order.vehicle.brand }} {{ order.vehicle.model }}</h4>
+                <p class="text-xs text-slate-400 mb-2">{{ order.customer.name }}</p>
+                
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-800/80 px-2 py-1 rounded-md mb-3">
+                    <i data-lucide="user" class="w-3 h-3 text-blue-400"></i>
+                    <span class="truncate">Operador: {{ order.assigned_to.first_name|default:order.assigned_to.username|default:"Não atribuído" }}</span>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                    <a href="{% url 'orders:detail' order.id %}" class="text-[11px] text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+                        <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-400"></i> Vistoria
+                    </a>
+                    <button hx-post="{% url 'orders:update_status' order.id %}?status=completed"
+                            hx-target="#kanban-container"
+                            hx-swap="outerHTML"
+                            class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1">
+                        <span>Concluir</span>
+                        <i data-lucide="check" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="h-40 flex flex-col items-center justify-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl p-4 text-center">
+                <i data-lucide="droplet" class="w-6 h-6 mb-2 stroke-[1.5]"></i>
+                <span>Nenhum serviço em execução</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 3. Pronto para Retirada -->
+    <div class="flex flex-col bg-slate-900/60 rounded-2xl border border-slate-800 p-4 min-h-[600px]">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                <h3 class="font-bold text-sm text-white">Pronto p/ Retirada</h3>
+            </div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{{ completed_orders.count }}</span>
+        </div>
+
+        <div class="flex-1 space-y-3 overflow-y-auto">
+            {% for order in completed_orders %}
+            <div class="glass-panel p-4 rounded-xl border border-emerald-500/30 shadow-md shadow-emerald-500/5 hover:border-emerald-500/50 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="px-2 py-0.5 text-xs font-mono font-black tracking-wider rounded-md bg-emerald-900/30 border border-emerald-500/40 text-emerald-300 uppercase">{{ order.vehicle.plate }}</span>
+                    <span class="text-[11px] font-bold text-emerald-400">R$ {{ order.final_price }}</span>
+                </div>
+                <h4 class="font-bold text-sm text-slate-100">{{ order.vehicle.brand }} {{ order.vehicle.model }}</h4>
+                <p class="text-xs text-slate-400 mb-2">{{ order.customer.name }}</p>
+
+                <div class="text-[11px] px-2 py-1 rounded-md mb-3 flex items-center justify-between
+                    {% if order.customer.billing_type == 'monthly' %}
+                        bg-indigo-500/10 text-indigo-300 border border-indigo-500/20
+                    {% else %}
+                        bg-emerald-500/10 text-emerald-300 border border-emerald-500/20
+                    {% endif %}">
+                    <span>{{ order.get_billing_status_display }}</span>
+                    <span class="uppercase font-semibold text-[10px]">{{ order.payment_method }}</span>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                    <a href="{% url 'orders:detail' order.id %}" class="text-[11px] text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i> Detalhes
+                    </a>
+                    <button hx-post="{% url 'orders:update_status' order.id %}?status=delivered"
+                            hx-target="#kanban-container"
+                            hx-swap="outerHTML"
+                            class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center gap-1">
+                        <span>Entregar</span>
+                        <i data-lucide="key" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="h-40 flex flex-col items-center justify-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl p-4 text-center">
+                <i data-lucide="check-circle" class="w-6 h-6 mb-2 stroke-[1.5]"></i>
+                <span>Nenhum veículo aguardando retirada</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 4. Entregues Recentes -->
+    <div class="flex flex-col bg-slate-900/60 rounded-2xl border border-slate-800 p-4 min-h-[600px]">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-slate-500"></span>
+                <h3 class="font-bold text-sm text-slate-300">Entregues Recentes</h3>
+            </div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">{{ delivered_orders.count }}</span>
+        </div>
+
+        <div class="flex-1 space-y-3 overflow-y-auto">
+            {% for order in delivered_orders %}
+            <div class="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80 opacity-80 hover:opacity-100 transition-opacity">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-mono font-bold text-slate-300">{{ order.vehicle.plate }}</span>
+                    <span class="text-[11px] font-medium text-slate-400">R$ {{ order.final_price }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span class="truncate max-w-[140px]">{{ order.vehicle.model }} - {{ order.customer.name }}</span>
+                    <span class="text-[10px] text-slate-500">{{ order.delivered_at|date:"H:i" }}</span>
+                </div>
+                <div class="mt-2 text-right">
+                    <a href="{% url 'orders:detail' order.id %}" class="text-[10px] text-blue-400 hover:underline">Ver Histórico</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="h-40 flex flex-col items-center justify-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl p-4 text-center">
+                <i data-lucide="archive" class="w-6 h-6 mb-2 stroke-[1.5]"></i>
+                <span>Nenhuma entrega recente</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Faturamento de Frotas - AutoFlow{% endblock %}
+{% block header_title %}Faturamento Mensal Consolidado (Frotistas){% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Generate Invoice Box -->
+    <div class="glass-panel p-6 rounded-3xl border border-slate-800">
+        <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Fechar Fatura de Frota</h3>
+        <form method="post" action="{% url 'billing:generate' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Cliente Frotista</label>
+                <select name="customer" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                    <option value="">Selecione o frotista...</option>
+                    {% for cust in fleet_customers %}
+                    <option value="{{ cust.id }}">{{ cust.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Mês de Referência</label>
+                <select name="month" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                    <option value="1">Janeiro (01)</option>
+                    <option value="2">Fevereiro (02)</option>
+                    <option value="3">Março (03)</option>
+                    <option value="4">Abril (04)</option>
+                    <option value="5">Maio (05)</option>
+                    <option value="6">Junho (06)</option>
+                    <option value="7">Julho (07)</option>
+                    <option value="8">Agosto (08)</option>
+                    <option value="9" selected>Setembro (09)</option>
+                    <option value="10">Outubro (10)</option>
+                    <option value="11">Novembro (11)</option>
+                    <option value="12">Dezembro (12)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Ano</label>
+                <input type="number" name="year" value="2026" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="receipt" class="w-4 h-4"></i>
+                    <span>Consolidar & Gerar Fatura</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Invoices List -->
+    <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="px-6 py-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white">Faturas Emitidas</h3>
+            <span class="text-xs text-slate-400">{{ invoices.count }} faturas</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-3.5 font-semibold">Fatura</th>
+                        <th class="px-6 py-3.5 font-semibold">Frotista</th>
+                        <th class="px-6 py-3.5 font-semibold">Referência</th>
+                        <th class="px-6 py-3.5 font-semibold">Vencimento</th>
+                        <th class="px-6 py-3.5 font-semibold">Status</th>
+                        <th class="px-6 py-3.5 font-semibold text-right">Valor Total</th>
+                        <th class="px-6 py-3.5 font-semibold text-right">Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for inv in invoices %}
+                    <tr class="hover:bg-slate-900/40 transition-colors">
+                        <td class="px-6 py-4 font-mono font-bold text-slate-200">#{{ inv.id }}</td>
+                        <td class="px-6 py-4">
+                            <strong class="text-white text-sm block">{{ inv.customer.name }}</strong>
+                            <span class="text-slate-500 text-[11px]">{{ inv.customer.phone }}</span>
+                        </td>
+                        <td class="px-6 py-4 font-semibold text-slate-300">{{ inv.reference_month }}/{{ inv.reference_year }}</td>
+                        <td class="px-6 py-4 text-slate-400">{{ inv.due_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase
+                                {% if inv.status == 'paid' %}bg-emerald-500/10 text-emerald-300 border border-emerald-500/20
+                                {% elif inv.status == 'open' %}bg-amber-500/10 text-amber-300 border border-amber-500/20
+                                {% else %}bg-slate-800 text-slate-400{% endif %}">
+                                {{ inv.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-black text-sm text-emerald-400">R$ {{ inv.total_amount }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'billing:detail' inv.id %}" class="px-3 py-1.5 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                <span>Ver Itens</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                            Nenhuma fatura mensal gerada ainda.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Livro Caixa - AutoFlow{% endblock %}
+{% block header_title %}Livro Caixa & Movimentações Financeiras{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Financial Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-panel p-6 rounded-3xl border border-slate-800">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Total de Entradas</span>
+            <div class="flex items-center justify-between">
+                <span class="text-2xl font-black text-emerald-400">+ R$ {{ total_income }}</span>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 rounded-3xl border border-slate-800">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Total de Saídas / Custos</span>
+            <div class="flex items-center justify-between">
+                <span class="text-2xl font-black text-rose-400">- R$ {{ total_expense }}</span>
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
+                    <i data-lucide="trending-down" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 rounded-3xl border border-slate-800">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Saldo em Caixa</span>
+            <div class="flex items-center justify-between">
+                <span class="text-2xl font-black {% if balance >= 0 %}text-blue-400{% else %}text-rose-400{% endif %}">
+                    R$ {{ balance }}
+                </span>
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+                    <i data-lucide="wallet" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Entry -->
+    <div class="glass-panel p-6 rounded-3xl border border-slate-800">
+        <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Novo Lançamento Manual no Caixa</h3>
+        <form method="post" action="{% url 'finance:entry_create' %}" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            {% csrf_token %}
+            <div>
+                <input type="text" name="description" required placeholder="Descrição (ex: Compra de Cera)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <select name="entry_type" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                    <option value="income">Receita (+) Entrada</option>
+                    <option value="expense">Despesa (-) Saída</option>
+                </select>
+            </div>
+
+            <div>
+                <input type="number" step="0.01" name="amount" required placeholder="Valor R$" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <select name="payment_method" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                    <option value="pix">PIX</option>
+                    <option value="cash">Dinheiro em Espécie</option>
+                    <option value="credit_card">Cartão de Crédito</option>
+                    <option value="debit_card">Cartão de Débito</option>
+                    <option value="bank_transfer">Transferência</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Lançar</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statement Table -->
+    <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="px-6 py-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white">Extrato de Movimentações</h3>
+            <span class="text-xs text-slate-500">Últimos lançamentos</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-3.5 font-semibold">Data</th>
+                        <th class="px-6 py-3.5 font-semibold">Descrição</th>
+                        <th class="px-6 py-3.5 font-semibold">Forma</th>
+                        <th class="px-6 py-3.5 font-semibold">Origem</th>
+                        <th class="px-6 py-3.5 font-semibold text-right">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for entry in entries %}
+                    <tr class="hover:bg-slate-900/40 transition-colors">
+                        <td class="px-6 py-3.5 text-slate-400">{{ entry.entry_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-3.5">
+                            <strong class="text-white block">{{ entry.description }}</strong>
+                            <span class="text-slate-500 text-[11px]">{{ entry.category.name|default:"Geral" }}</span>
+                        </td>
+                        <td class="px-6 py-3.5">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 uppercase font-semibold text-[10px]">
+                                {{ entry.get_payment_method_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5">
+                            {% if entry.order %}
+                            <a href="{% url 'orders:detail' entry.order.id %}" class="text-blue-400 hover:underline">
+                                OS #{{ entry.order.id }}
+                            </a>
+                            {% else %}
+                            <span class="text-slate-500">Lançamento Avulso</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3.5 text-right">
+                            <span class="font-bold text-sm {% if entry.entry_type == 'income' %}text-emerald-400{% else %}text-rose-400{% endif %}">
+                                {% if entry.entry_type == 'income' %}+{% else %}-{% endif %} R$ {{ entry.amount }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            Nenhuma movimentação financeira registrada.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

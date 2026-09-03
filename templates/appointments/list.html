@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendamentos Online - AutoFlow{% endblock %}
+{% block header_title %}Agendamentos Recebidos (Web & App Mobile){% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="px-6 py-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white">Grade de Horários Agendados</h3>
+            <span class="text-xs text-slate-400">{{ appointments.count }} solicitações</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-3.5 font-semibold">Data / Hora</th>
+                        <th class="px-6 py-3.5 font-semibold">Cliente & Contato</th>
+                        <th class="px-6 py-3.5 font-semibold">Veículo</th>
+                        <th class="px-6 py-3.5 font-semibold">Serviço Desejado</th>
+                        <th class="px-6 py-3.5 font-semibold">Status</th>
+                        <th class="px-6 py-3.5 font-semibold text-right">Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for app in appointments %}
+                    <tr class="hover:bg-slate-900/40 transition-colors">
+                        <td class="px-6 py-4">
+                            <strong class="text-sm text-white block">{{ app.scheduled_date|date:"d/m/Y" }}</strong>
+                            <span class="text-xs text-blue-400 font-bold">às {{ app.scheduled_time }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <strong class="text-white block">{{ app.customer.name }}</strong>
+                            <span class="text-slate-500 text-[11px]">{{ app.customer.phone }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-800 font-mono font-bold text-slate-200 uppercase">
+                                {{ app.vehicle.plate }}
+                            </span>
+                            <span class="text-slate-400 block text-[11px] mt-0.5">{{ app.vehicle.model }}</span>
+                        </td>
+                        <td class="px-6 py-4 font-semibold text-slate-200">{{ app.service_type.name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase
+                                {% if app.status == 'confirmed' %}bg-blue-500/10 text-blue-300 border border-blue-500/20
+                                {% elif app.status == 'arrived' %}bg-emerald-500/10 text-emerald-300 border border-emerald-500/20
+                                {% elif app.status == 'pending' %}bg-amber-500/10 text-amber-300 border border-amber-500/20
+                                {% else %}bg-slate-800 text-slate-400{% endif %}">
+                                {{ app.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if app.status != 'arrived' and app.status != 'cancelled' %}
+                            <a href="{% url 'appointments:check_in' app.id %}" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all inline-flex items-center gap-1.5">
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                <span>Dar Entrada (Check-in)</span>
+                            </a>
+                            {% elif app.order %}
+                            <a href="{% url 'orders:detail' app.order.id %}" class="text-xs text-blue-400 hover:underline">
+                                Ver OS #{{ app.order.id }} no Pátio
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                            Nenhum agendamento online registrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

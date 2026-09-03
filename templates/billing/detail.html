@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Fatura #{{ invoice.id }} - AutoFlow{% endblock %}
+{% block header_title %}Detalhamento da Fatura #{{ invoice.id }}{% endblock %}
+
+{% block top_actions %}
+<a href="{% url 'billing:list' %}" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors flex items-center gap-2">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    <span>Voltar às Faturas</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Invoice Summary Banner -->
+    <div class="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <span class="text-xs text-slate-400">Cliente Frotista</span>
+            <h2 class="text-xl font-bold text-white">{{ invoice.customer.name }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Competência: <strong>{{ invoice.reference_month }}/{{ invoice.reference_year }}</strong> • Vencimento: {{ invoice.due_date|date:"d/m/Y" }}</p>
+        </div>
+
+        <div class="text-right">
+            <span class="text-xs text-slate-400 block">Total a Liquidar</span>
+            <span class="text-3xl font-black text-emerald-400">R$ {{ invoice.total_amount }}</span>
+            <span class="inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-bold uppercase
+                {% if invoice.status == 'paid' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+                {% elif invoice.status == 'open' %}bg-amber-500/20 text-amber-300 border border-amber-500/30
+                {% else %}bg-slate-700 text-slate-300{% endif %}">
+                {{ invoice.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Action Bar to Liquidate -->
+    {% if invoice.status == 'open' %}
+    <div class="p-6 rounded-3xl bg-indigo-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h4 class="text-sm font-bold text-white">Receber Pagamento da Fatura</h4>
+            <p class="text-xs text-slate-400">Ao liquidar, todas as ordens vinculadas serão marcadas como pagas e a receita entrará no Livro Caixa.</p>
+        </div>
+
+        <form method="post" action="{% url 'billing:mark_paid' invoice.id %}" class="flex items-center gap-3">
+            {% csrf_token %}
+            <select name="payment_method" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                <option value="pix">PIX</option>
+                <option value="bank_transfer">Boleto / TED</option>
+                <option value="credit_card">Cartão de Crédito</option>
+                <option value="cash">Espécie</option>
+            </select>
+            <button type="submit" onclick="return confirm('Confirmar liquidação da fatura no valor de R$ {{ invoice.total_amount }}?')" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all">
+                Confirmar Liquidação
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Items Snapshot Table -->
+    <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="px-6 py-4 border-b border-slate-800 bg-slate-900/60">
+            <h3 class="text-sm font-bold text-white">Itens / Ordens de Serviço Inclusas</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-3.5 font-semibold">Data</th>
+                        <th class="px-6 py-3.5 font-semibold">Placa</th>
+                        <th class="px-6 py-3.5 font-semibold">Serviço Executado</th>
+                        <th class="px-6 py-3.5 font-semibold">OS Referência</th>
+                        <th class="px-6 py-3.5 font-semibold text-right">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for item in invoice.items.all %}
+                    <tr class="hover:bg-slate-900/40 transition-colors">
+                        <td class="px-6 py-3.5 text-slate-400">{{ item.service_date|date:"d/m/Y H:i" }}</td>
+                        <td class="px-6 py-3.5 font-mono font-bold text-white">{{ item.vehicle_plate }}</td>
+                        <td class="px-6 py-3.5 text-slate-200">{{ item.service_name }}</td>
+                        <td class="px-6 py-3.5">
+                            <a href="{% url 'orders:detail' item.order_id %}" class="text-blue-400 hover:underline">
+                                OS #{{ item.order_id }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-3.5 text-right font-bold text-white">R$ {{ item.amount }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">
+                            Nenhum item na fatura.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
