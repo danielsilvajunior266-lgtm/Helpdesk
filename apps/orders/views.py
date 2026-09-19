@@ -16,7 +16,9 @@ from apps.orders.services import (
 @tenant_required
 def kanban_view(request):
     company = request.company
-    orders = ServiceOrder.objects.filter(company=company).select_related('customer', 'vehicle', 'service_type', 'assigned_to')
+    orders = ServiceOrder.objects.filter(company=company).select_related(
+        'customer', 'vehicle', 'service_type', 'assigned_to'
+    ).prefetch_related('photos')
 
     waiting_orders = orders.filter(status='waiting')
     in_progress_orders = orders.filter(status='in_progress')
@@ -109,7 +111,9 @@ def update_status(request, order_id):
 
     # Re-renderiza o quadro Kanban completo para requisições HTMX
     if request.headers.get('HX-Request'):
-        orders = ServiceOrder.objects.filter(company=request.company).select_related('customer', 'vehicle', 'service_type', 'assigned_to')
+        orders = ServiceOrder.objects.filter(company=request.company).select_related(
+            'customer', 'vehicle', 'service_type', 'assigned_to'
+        ).prefetch_related('photos')
         return render(request, 'orders/partials/kanban_board.html', {
             'waiting_orders': orders.filter(status='waiting'),
             'in_progress_orders': orders.filter(status='in_progress'),

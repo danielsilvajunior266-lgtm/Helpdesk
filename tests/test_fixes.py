@@ -271,4 +271,86 @@ def test_customer_registration_web_view_and_role_restriction(client):
     assert created_user.is_superuser is False
 
 
+@pytest.mark.django_db
+def test_loyalty_service_reward_configuration_and_100_points_notification(auth_client, company_a, customer_retail, service_wash):
+    from apps.loyalty.models import LoyaltyProgram, LoyaltyAccount
+
+    # 1. Configura o programa escolhendo o serviço recompensa do lava jato
+    res_cfg = auth_client.post(reverse('loyalty:configure'), {
+        'reward_type': 'service',
+        'reward_service_id': service_wash.id,
+        'points_needed_for_reward': 100,
+        'is_active': 'on'
+    })
+    assert res_cfg.status_code == 302
+
+    program = LoyaltyProgram.objects.get(company=company_a)
+    assert program.reward_service == service_wash
+    assert program.reward_name == service_wash.name
+    assert program.points_needed_for_reward == 100
+
+    # 2. Cliente atinge 100 pontos
+    account, _ = LoyaltyAccount.objects.get_or_create(
+        company=company_a,
+        customer=customer_retail,
+        defaults={'points_balance': 0, 'total_points_earned': 0}
+    )
+    account.points_balance = 100
+    account.total_points_earned = 100
+    account.save()
+
+    # 3. Verifica que a notificação de 100 pontos premiados foi disparada para o dono
+    res_page = auth_client.get('/')
+    assert res_page.status_code == 200
+    notifs = res_page.context['notifications']
+    loyalty_notifs = [n for n in notifs if n['type'] == 'loyalty_reward_available']
+    assert len(loyalty_notifs) == 1
+    assert customer_retail.name in loyalty_notifs[0]['title']
+    assert service_wash.name in loyalty_notifs[0]['message']
+    assert '100 pontos' in loyalty_notifs[0]['message']
+
+    # 4. Resgate do prêmio
+    res_redeem = auth_client.get(reverse('loyalty:redeem', kwargs={'account_id': account.id}))
+    assert res_redeem.status_code == 302
+    account.refresh_from_db()
+    assert account.points_balance == 0
+    assert account.total_rewards_redeemed == 1
+
+    # 5. Configura com produto / brinde físico
+    res_cfg_prod = auth_client.post(reverse('loyalty:configure'), {
+        'reward_type': 'product',
+        'reward_product_name': "Cera Meguiar's Premium",
+        'points_needed_for_reward': 150,
+        'is_active': 'on'
+    })
+    assert res_cfg_prod.status_code == 302
+    program.refresh_from_db()
+    assert program.reward_product_name == "Cera Meguiar's Premium"
+    assert program.reward_name == "Cera Meguiar's Premium"
+    assert program.points_needed_for_reward == 150
+
+
+@pytest.mark.django_db
+def test_create_service_with_custom_loyalty_points(auth_client, company_a):
+    from apps.services.models import ServiceType
+
+    payload = {
+        'name': 'Polimento Técnico Premium',
+        'default_price': '180.00',
+        'estimated_duration_minutes': '120',
+        'description': 'Polimento e vitrificação de pintura',
+        'counts_for_loyalty': 'on',
+        'loyalty_points_earned': '35',
+    }
+
+    res = auth_client.post(reverse('services:create'), payload)
+    assert res.status_code == 302
+
+    created_service = ServiceType.objects.get(company=company_a, name='Polimento Técnico Premium')
+    assert created_service.counts_for_loyalty is True
+    assert created_service.loyalty_points_earned == 35
+
+
+
+
 

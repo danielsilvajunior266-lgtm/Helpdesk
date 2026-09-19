@@ -11,4 +11,5 @@ urlpatterns = [
     path('garage/add/', views.portal_add_vehicle, name='add_vehicle'),
     path('garage/delete/<int:vehicle_id>/', views.portal_delete_vehicle, name='delete_vehicle'),
     path('appointment/cancel/<int:appointment_id>/', views.portal_cancel_appointment, name='cancel_appointment'),
+    path('live-status/', views.portal_live_status, name='live_status'),
 ]

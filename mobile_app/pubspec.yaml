@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.5.5
   cached_network_image: ^4.0.0
   google_fonts: ^8.2.1
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +51,21 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#121519"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#121519"
+    theme_color: "#121519"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -64,6 +80,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

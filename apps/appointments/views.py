@@ -16,7 +16,7 @@ def appointment_list(request):
 def check_in_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id, company=request.company)
     order = convert_appointment_to_order(appointment)
-    messages.success(request, f"Entrada confirmada! OS #{order.id} criada e adicionada ao Pátio.")
+    messages.success(request, f"Entrada confirmada! Serviço nº {order.id} iniciado e adicionado ao Pátio.")
     return redirect('orders:kanban')
 
 

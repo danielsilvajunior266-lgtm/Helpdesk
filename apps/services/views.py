@@ -27,15 +27,25 @@ def service_create(request):
         if category_id:
             category = ServiceCategory.objects.filter(id=category_id, company=request.company).first()
 
+        counts_for_loyalty = request.POST.get('counts_for_loyalty') == 'on'
+        loyalty_points = request.POST.get('loyalty_points_earned', 10)
+
+        try:
+            loyalty_points = max(0, int(loyalty_points))
+        except ValueError:
+            loyalty_points = 10
+
         ServiceType.objects.create(
             company=request.company,
             name=name,
             default_price=price,
             estimated_duration_minutes=duration,
             category=category,
-            description=description
+            description=description,
+            counts_for_loyalty=counts_for_loyalty,
+            loyalty_points_earned=loyalty_points
         )
-        messages.success(request, f'Serviço {name} cadastrado!')
+        messages.success(request, f'Serviço {name} cadastrado com sucesso!')
         return redirect('services:list')
 
     categories = ServiceCategory.objects.filter(company=request.company)

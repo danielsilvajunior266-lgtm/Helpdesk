@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Livro Caixa - AutoFlow{% endblock %}
-{% block header_title %}Livro Caixa & Movimentações Financeiras{% endblock %}
+{% block title %}Fluxo de Caixa - AutoFlow{% endblock %}
+{% block header_title %}Fluxo de Caixa & Movimentações Financeiras{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -111,8 +111,8 @@
                         </td>
                         <td class="px-6 py-3.5">
                             {% if entry.order %}
-                            <a href="{% url 'orders:detail' entry.order.id %}" class="text-blue-400 hover:underline">
-                                OS #{{ entry.order.id }}
+                            <a href="{% url 'orders:detail' entry.order.id %}" class="text-blue-400 hover:underline font-semibold">
+                                Serviço nº {{ entry.order.id }}
                             </a>
                             {% else %}
                             <span class="text-slate-500">Lançamento Avulso</span>

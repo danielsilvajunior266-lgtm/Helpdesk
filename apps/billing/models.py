@@ -3,8 +3,8 @@ from apps.saas_core.models import TenantModel
 
 class MonthlyInvoice(TenantModel):
     STATUS_CHOICES = [
-        ('open', 'Aberta / Aguardando Pagamento'),
-        ('paid', 'Liquidada / Paga'),
+        ('open', 'Aberta'),
+        ('paid', 'Liquidada'),
         ('cancelled', 'Cancelada'),
     ]
 

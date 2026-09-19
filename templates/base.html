@@ -242,7 +242,7 @@
                 <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
                     <i data-lucide="gauge" class="w-4 h-4 icon-float"></i>
                 </div>
-                <span class="transition-colors group-hover:text-white">Kanban / Pátio</span>
+                <span class="transition-colors group-hover:text-white">Pátio de Serviços</span>
             </a>
 
             <a href="{% url 'customers:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'customers' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
@@ -272,16 +272,16 @@
                 <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
                     <i data-lucide="shield-check" class="w-4 h-4 icon-float"></i>
                 </div>
-                <span class="transition-colors group-hover:text-white">Livro Caixa / PDV</span>
+                <span class="transition-colors group-hover:text-white">Fluxo de Caixa</span>
             </a>
 
-            <!-- Módulo Frotas (Plano Pro/Premium) -->
+            <!-- Módulo Convênios & Frotas (Plano Pro/Premium) -->
             {% if tenant_features.has_monthly_billing %}
             <a href="{% url 'billing:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'billing' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
                 <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
                     <i data-lucide="receipt" class="w-4 h-4 icon-float"></i>
                 </div>
-                <span class="transition-colors group-hover:text-white">Faturamento Frotas</span>
+                <span class="transition-colors group-hover:text-white">Convênios & Frotas</span>
             </a>
             {% endif %}
 
@@ -295,13 +295,13 @@
             </a>
             {% endif %}
 
-            <!-- Módulo Comissões (Plano Premium) -->
-            {% if tenant_features.has_commissions %}
-            <a href="{% url 'commissions:list' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'commissions' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
+            <!-- Módulo Funcionários e Diaristas (Plano Premium) -->
+            {% if tenant_features.has_employees %}
+            <a href="{% url 'employees:dashboard' %}" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all {% if request.resolver_match.app_name == 'employees' %}active-nav-link font-semibold{% else %}text-[#9A9FA8] hover:text-[#F5F5F7] hover:bg-[#1E232A]/70{% endif %}">
                 <div class="w-8 h-8 rounded-lg icon-badge-3d flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="percent" class="w-4 h-4 icon-float"></i>
+                    <i data-lucide="users" class="w-4 h-4 icon-float"></i>
                 </div>
-                <span class="transition-colors group-hover:text-white">Comissões Operadores</span>
+                <span class="transition-colors group-hover:text-white">Funcionários</span>
             </a>
             {% endif %}
         </nav>

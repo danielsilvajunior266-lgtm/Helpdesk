@@ -21,7 +21,7 @@ def create_cash_entry_from_order(order):
 
         entry = CashEntry.objects.create(
             company=order.company,
-            description=f"OS #{order.id} - {order.service_type.name} ({order.vehicle.plate})",
+            description=f"Serviço nº {order.id} - {order.service_type.name} ({order.vehicle.plate})",
             entry_type='income',
             amount=order.final_price,
             payment_method=order.payment_method or 'pix',

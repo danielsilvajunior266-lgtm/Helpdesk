@@ -36,6 +36,9 @@ class ServiceType(TenantModel):
         verbose_name = 'Tipo de Serviço'
         verbose_name_plural = 'Tipos de Serviços'
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['company', 'is_active']),
+        ]
 
     def __str__(self):
         return f"{self.name} - R$ {self.default_price}"

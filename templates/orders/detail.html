@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load plate_tags %}
 
-{% block title %}OS #{{ order.id }} - AutoFlow{% endblock %}
-{% block header_title %}Ordem de Serviço #{{ order.id }}{% endblock %}
+{% block title %}Serviço nº {{ order.id }} - AutoFlow{% endblock %}
+{% block header_title %}Serviço nº {{ order.id }}{% endblock %}
 
 {% block top_actions %}
 <a href="{% url 'orders:kanban' %}" class="px-4 py-2 rounded-xl bg-[#1E232A] hover:bg-[#252B33] text-[#F5E6BE] border border-[#A3734C]/30 font-bold text-xs transition-all flex items-center gap-2 shadow-sm">
@@ -20,7 +21,7 @@
             </div>
             <div>
                 <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 text-sm font-mono font-black tracking-wider rounded-lg bg-[#121519] border border-[#A3734C]/35 text-[#D4AF37] uppercase">{{ order.vehicle.plate }}</span>
+                    {% render_plate order.vehicle.plate 'md' %}
                     <span class="px-3 py-0.5 text-xs font-bold rounded-full uppercase
                         {% if order.status == 'waiting' %}bg-[#D4AF37]/20 text-[#F5E6BE] border border-[#D4AF37]/35
                         {% elif order.status == 'in_progress' %}bg-[#1EA8D7]/20 text-[#38C5EE] border border-[#1EA8D7]/40
@@ -61,7 +62,7 @@
                 </div>
                 <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
                     <span class="text-slate-400 block mb-1">Operador Responsável</span>
-                    <strong class="text-sm text-white">{{ order.assigned_to.get_full_name|default:order.assigned_to.username|default:"Não atribuído" }}</strong>
+                    <strong class="text-sm text-white">{% if order.assigned_to %}{{ order.assigned_to.get_full_name|default:order.assigned_to.username }}{% else %}Não atribuído{% endif %}</strong>
                 </div>
                 <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
                     <span class="text-slate-400 block mb-1">Entrada no Pátio</span>

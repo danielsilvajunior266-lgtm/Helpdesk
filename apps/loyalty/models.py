@@ -2,18 +2,42 @@ from django.db import models
 from apps.saas_core.models import TenantModel
 
 class LoyaltyProgram(TenantModel):
+    REWARD_TYPE_CHOICES = [
+        ('service', 'Serviço do Lava-Jato'),
+        ('product', 'Produto / Brinde Personalizado'),
+    ]
+
     name = models.CharField('Nome do Programa', max_length=100, default='Clube Fidelidade')
-    points_needed_for_reward = models.PositiveIntegerField('Pontos para Resgate', default=100)
+    reward_type = models.CharField('Tipo de Recompensa', max_length=20, choices=REWARD_TYPE_CHOICES, default='service')
+    reward_service = models.ForeignKey(
+        'services.ServiceType',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='loyalty_rewards',
+        verbose_name='Serviço Recompensa Gratuito'
+    )
+    reward_product_name = models.CharField('Nome do Produto / Prêmio', max_length=255, blank=True)
     reward_description = models.CharField('Descrição da Recompensa', max_length=255, default='Lavagem Completa Grátis')
-    points_per_service = models.PositiveIntegerField('Pontos Base por Serviço', default=10)
+    points_needed_for_reward = models.PositiveIntegerField('Alvo de Pontos para Resgate', default=100)
     is_active = models.BooleanField('Programa Ativo', default=True)
 
     class Meta:
         verbose_name = 'Programa de Fidelidade'
         verbose_name_plural = 'Programas de Fidelidade'
 
+    @property
+    def reward_name(self):
+        if self.reward_type == 'service' and self.reward_service:
+            return self.reward_service.name
+        elif self.reward_product_name:
+            return self.reward_product_name
+        elif self.reward_service:
+            return self.reward_service.name
+        return self.reward_description or 'Lavagem Completa Grátis'
+
     def __str__(self):
-        return f"{self.name} ({self.points_needed_for_reward} pts -> {self.reward_description})"
+        return f"{self.name} ({self.points_needed_for_reward} pts -> {self.reward_name})"
 
 
 class LoyaltyAccount(TenantModel):
@@ -31,6 +55,9 @@ class LoyaltyAccount(TenantModel):
         verbose_name = 'Conta de Fidelidade'
         verbose_name_plural = 'Contas de Fidelidade'
         unique_together = ('company', 'customer')
+        indexes = [
+            models.Index(fields=['company', 'customer']),
+        ]
 
     def __str__(self):
         return f"{self.customer.name} - Saldo: {self.points_balance} pts"
@@ -65,6 +92,10 @@ class LoyaltyEvent(TenantModel):
         verbose_name = 'Evento de Fidelidade'
         verbose_name_plural = 'Extrato de Fidelidade'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['account', '-created_at']),
+            models.Index(fields=['company', '-created_at']),
+        ]
 
     def __str__(self):
         sign = '+' if self.points > 0 else ''

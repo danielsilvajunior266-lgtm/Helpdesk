@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "performance": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/performance/SKILL.md",
+      "computedHash": "25074989a0bbf636fd92e9079270b262a1c63422ed72a854494a8241dea0fcc5"
+    }
+  }
+}

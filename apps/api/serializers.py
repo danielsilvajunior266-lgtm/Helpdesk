@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from apps.accounts.models import User
 from apps.saas_core.models import Company
 from apps.customers.models import Customer, Vehicle
@@ -6,6 +7,40 @@ from apps.services.models import ServiceType
 from apps.orders.models import ServiceOrder, OrderPhoto
 from apps.appointments.models import Appointment
 from apps.loyalty.models import LoyaltyAccount, LoyaltyEvent
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'] = serializers.CharField(required=False)
+        self.fields['email'] = serializers.CharField(required=False)
+
+    def validate(self, attrs):
+        login_val = (attrs.get('email') or attrs.get('username') or '').strip()
+        password = (attrs.get('password') or '').strip()
+
+        if not login_val:
+            raise serializers.ValidationError({'detail': 'Informe seu e-mail ou nome de usuário.'})
+
+        user = User.objects.filter(email__iexact=login_val).first()
+        if not user:
+            user = User.objects.filter(username__iexact=login_val).first()
+
+        if user and user.check_password(password):
+            if not user.is_active:
+                raise serializers.ValidationError({'detail': 'Esta conta de usuário está desativada.'})
+            refresh = self.get_token(user)
+            return {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'name': user.get_full_name() or user.username,
+                    'email': user.email,
+                    'role': user.role,
+                }
+            }
+        raise serializers.ValidationError({'detail': 'E-mail/Usuário ou senha incorretos. Verifique suas credenciais.'})
+
 
 class CompanySerializer(serializers.ModelSerializer):
     plan_code = serializers.CharField(source='plan.code', read_only=True)
@@ -63,16 +98,16 @@ class VehicleSerializer(serializers.ModelSerializer):
         if not company:
             raise serializers.ValidationError({'company': 'Nenhuma empresa operacional encontrada para associar o veículo.'})
 
-        # Obtém ou cria o perfil de Customer para o usuário autenticado
-        customer, _ = Customer.objects.get_or_create(
-            user=user,
-            company=company,
-            defaults={
-                'name': user.get_full_name() or user.username,
-                'phone': user.phone or '0000000000',
-                'email': user.email,
-            }
-        )
+        # Obtém ou cria o perfil de Customer para o usuário autenticado de forma segura
+        customer = Customer.objects.filter(user=user, company=company).first()
+        if not customer:
+            customer = Customer.objects.create(
+                user=user,
+                company=company,
+                name=user.get_full_name() or user.username,
+                phone=user.phone or '0000000000',
+                email=user.email or '',
+            )
         return Vehicle.objects.create(company=company, customer=customer, **validated_data)
 
 
@@ -96,16 +131,19 @@ class RegisterCustomerSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     service_name = serializers.CharField(source='service_type.name', read_only=True)
     vehicle_plate = serializers.CharField(source='vehicle.plate', read_only=True)
+    vehicle_brand = serializers.CharField(source='vehicle.brand', default='', read_only=True)
+    vehicle_model = serializers.CharField(source='vehicle.model', default='', read_only=True)
     company_name = serializers.CharField(source='company.name', read_only=True)
+    company_address = serializers.CharField(source='company.address', default='', read_only=True)
 
     class Meta:
         model = Appointment
         fields = [
-            'id', 'company', 'company_name', 'vehicle', 'vehicle_plate',
-            'service_type', 'service_name', 'scheduled_date', 'scheduled_time',
-            'status', 'notes'
+            'id', 'company', 'company_name', 'company_address', 'vehicle', 'vehicle_plate',
+            'vehicle_brand', 'vehicle_model', 'service_type', 'service_name',
+            'scheduled_date', 'scheduled_time', 'status', 'notes'
         ]
-        read_only_fields = ['status', 'company_name', 'vehicle_plate', 'service_name']
+        read_only_fields = ['status', 'company_name', 'company_address', 'vehicle_plate', 'vehicle_brand', 'vehicle_model', 'service_name']
 
     def validate(self, attrs):
         request = self.context.get('request')
@@ -144,15 +182,19 @@ class OrderPhotoSerializer(serializers.ModelSerializer):
 class ServiceOrderSerializer(serializers.ModelSerializer):
     service_name = serializers.CharField(source='service_type.name', read_only=True)
     vehicle_plate = serializers.CharField(source='vehicle.plate', read_only=True)
+    vehicle_brand = serializers.CharField(source='vehicle.brand', default='', read_only=True)
+    vehicle_model = serializers.CharField(source='vehicle.model', default='', read_only=True)
     company_name = serializers.CharField(source='company.name', read_only=True)
+    company_address = serializers.CharField(source='company.address', default='', read_only=True)
     photos = OrderPhotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = ServiceOrder
         fields = [
-            'id', 'company_name', 'vehicle_plate', 'service_name',
-            'price', 'discount', 'final_price', 'status', 'payment_method',
-            'started_at', 'completed_at', 'delivered_at', 'photos', 'created_at'
+            'id', 'company_name', 'company_address', 'vehicle_plate', 'vehicle_brand',
+            'vehicle_model', 'service_name', 'price', 'discount', 'final_price',
+            'status', 'payment_method', 'started_at', 'completed_at', 'delivered_at',
+            'photos', 'created_at'
         ]
 
 
@@ -163,10 +205,27 @@ class LoyaltyEventSerializer(serializers.ModelSerializer):
 
 
 class LoyaltyAccountSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField(source='company.id', read_only=True)
+    company_name = serializers.CharField(source='company.name', read_only=True)
+    company_slug = serializers.CharField(source='company.slug', read_only=True)
+    company_city = serializers.CharField(source='company.city', default='', read_only=True)
+    company_logo = serializers.SerializerMethodField()
     events = LoyaltyEventSerializer(many=True, read_only=True)
-    reward_description = serializers.CharField(source='company.loyalty_loyaltyprogram_set.first.reward_description', default='Recompensa VIP', read_only=True)
+    reward_description = serializers.CharField(source='company.loyalty_loyaltyprogram_set.first.reward_name', default='Recompensa VIP', read_only=True)
     points_needed = serializers.IntegerField(source='company.loyalty_loyaltyprogram_set.first.points_needed_for_reward', default=100, read_only=True)
 
     class Meta:
         model = LoyaltyAccount
-        fields = ['points_balance', 'total_points_earned', 'total_rewards_redeemed', 'reward_description', 'points_needed', 'events']
+        fields = [
+            'company_id', 'company_name', 'company_slug', 'company_city', 'company_logo',
+            'points_balance', 'total_points_earned', 'total_rewards_redeemed',
+            'reward_description', 'points_needed', 'events'
+        ]
+
+    def get_company_logo(self, obj):
+        if obj.company and obj.company.logo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.company.logo.url)
+            return obj.company.logo.url
+        return None

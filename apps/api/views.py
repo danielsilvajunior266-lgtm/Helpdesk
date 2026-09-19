@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.shortcuts import get_object_or_404
 from apps.saas_core.models import Company
 from apps.customers.models import Customer, Vehicle
@@ -9,6 +10,7 @@ from apps.orders.models import ServiceOrder
 from apps.appointments.models import Appointment
 from apps.loyalty.models import LoyaltyAccount
 from apps.api.serializers import (
+    CustomTokenObtainPairSerializer,
     CompanySerializer,
     ServiceTypeSerializer,
     VehicleSerializer,
@@ -17,6 +19,11 @@ from apps.api.serializers import (
     ServiceOrderSerializer,
     LoyaltyAccountSerializer
 )
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
+
 
 class RegisterCustomerAPIView(generics.CreateAPIView):
     serializer_class = RegisterCustomerSerializer
@@ -49,7 +56,7 @@ class CustomerVehicleListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Vehicle.objects.filter(customer__user=self.request.user)
+        return Vehicle.objects.filter(customer__user=self.request.user).select_related('company', 'customer')
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -60,14 +67,22 @@ class CustomerVehicleListCreateAPIView(generics.ListCreateAPIView):
         return context
 
 
+class CustomerVehicleDetailAPIView(generics.RetrieveDestroyAPIView):
+    serializer_class = VehicleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Vehicle.objects.filter(customer__user=self.request.user).select_related('company', 'customer')
+
+
 class CustomerAppointmentsListAPIView(generics.ListAPIView):
     serializer_class = AppointmentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Appointment.objects.filter(customer__user=self.request.user).select_related(
-            'company', 'vehicle', 'service_type'
-        )
+            'company', 'vehicle', 'service_type', 'customer'
+        ).order_by('-scheduled_date', '-scheduled_time')
 
 
 class AppointmentCreateAPIView(generics.CreateAPIView):
@@ -77,16 +92,28 @@ class AppointmentCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user
         company = serializer.validated_data['company']
-        customer, _ = Customer.objects.get_or_create(
-            user=user,
-            company=company,
-            defaults={
-                'name': user.get_full_name() or user.username,
-                'phone': user.phone or '0000000000',
-                'email': user.email
-            }
-        )
+        customer = Customer.objects.filter(user=user, company=company).first()
+        if not customer:
+            customer = Customer.objects.create(
+                user=user,
+                company=company,
+                name=user.get_full_name() or user.username,
+                phone=user.phone or '0000000000',
+                email=user.email or ''
+            )
         serializer.save(customer=customer)
+
+
+class AppointmentCancelAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk, *args, **kwargs):
+        appointment = get_object_or_404(Appointment, id=pk, customer__user=request.user)
+        if appointment.status in ['pending', 'confirmed']:
+            appointment.status = 'cancelled'
+            appointment.save()
+            return Response({'status': 'cancelled', 'message': 'Agendamento cancelado com sucesso.'})
+        return Response({'error': 'cannot_cancel', 'detail': 'Este agendamento não pode mais ser cancelado pois o atendimento já foi iniciado.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomerOrdersListAPIView(generics.ListAPIView):
@@ -94,9 +121,12 @@ class CustomerOrdersListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return ServiceOrder.objects.filter(
-            customer__user=self.request.user
-        ).select_related('company', 'vehicle', 'service_type').prefetch_related('photos')
+        from apps.orders.services import get_user_service_orders
+        company_id = self.request.query_params.get('company_id')
+        company = None
+        if company_id and str(company_id).isdigit():
+            company = Company.objects.filter(id=int(company_id), status='active').first()
+        return get_user_service_orders(self.request.user, company=company)
 
 
 class CustomerLoyaltyBalanceAPIView(APIView):
@@ -110,7 +140,7 @@ class CustomerLoyaltyBalanceAPIView(APIView):
         account = LoyaltyAccount.objects.filter(
             customer__user=request.user,
             company_id=company_id
-        ).prefetch_related('events').first()
+        ).select_related('customer', 'company').prefetch_related('events').first()
 
         if not account:
             return Response({
@@ -122,5 +152,15 @@ class CustomerLoyaltyBalanceAPIView(APIView):
                 'events': []
             })
 
-        serializer = LoyaltyAccountSerializer(account)
+        serializer = LoyaltyAccountSerializer(account, context={'request': request})
         return Response(serializer.data)
+
+
+class CustomerAllLoyaltyAccountsAPIView(generics.ListAPIView):
+    serializer_class = LoyaltyAccountSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return LoyaltyAccount.objects.filter(
+            customer__user=self.request.user
+        ).select_related('company', 'customer').prefetch_related('events').order_by('-points_balance')

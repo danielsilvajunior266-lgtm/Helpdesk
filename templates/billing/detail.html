@@ -23,10 +23,11 @@
         <div class="text-right">
             <span class="text-xs text-slate-400 block">Total a Liquidar</span>
             <span class="text-3xl font-black text-emerald-400">R$ {{ invoice.total_amount }}</span>
-            <span class="inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-bold uppercase
+            <span class="inline-flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap
                 {% if invoice.status == 'paid' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
                 {% elif invoice.status == 'open' %}bg-amber-500/20 text-amber-300 border border-amber-500/30
                 {% else %}bg-slate-700 text-slate-300{% endif %}">
+                <span class="w-1.5 h-1.5 rounded-full {% if invoice.status == 'paid' %}bg-emerald-400{% elif invoice.status == 'open' %}bg-amber-400{% else %}bg-slate-400{% endif %}"></span>
                 {{ invoice.get_status_display }}
             </span>
         </div>
@@ -37,7 +38,7 @@
     <div class="p-6 rounded-3xl bg-indigo-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-4">
         <div>
             <h4 class="text-sm font-bold text-white">Receber Pagamento da Fatura</h4>
-            <p class="text-xs text-slate-400">Ao liquidar, todas as ordens vinculadas serão marcadas como pagas e a receita entrará no Livro Caixa.</p>
+            <p class="text-xs text-slate-400">Ao liquidar, todas as ordens vinculadas serão marcadas como pagas e a receita entrará no Fluxo de Caixa.</p>
         </div>
 
         <form method="post" action="{% url 'billing:mark_paid' invoice.id %}" class="flex items-center gap-3">
@@ -78,8 +79,8 @@
                         <td class="px-6 py-3.5 font-mono font-bold text-white">{{ item.vehicle_plate }}</td>
                         <td class="px-6 py-3.5 text-slate-200">{{ item.service_name }}</td>
                         <td class="px-6 py-3.5">
-                            <a href="{% url 'orders:detail' item.order_id %}" class="text-blue-400 hover:underline">
-                                OS #{{ item.order_id }}
+                            <a href="{% url 'orders:detail' item.order_id %}" class="text-blue-400 hover:underline font-semibold">
+                                Serviço nº {{ item.order_id }}
                             </a>
                         </td>
                         <td class="px-6 py-3.5 text-right font-bold text-white">R$ {{ item.amount }}</td>

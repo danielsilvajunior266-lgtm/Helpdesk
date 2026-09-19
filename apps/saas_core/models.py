@@ -72,6 +72,8 @@ class Company(TimeStampedModel):
         """
         if not self.plan:
             return False
+        if feature_name in ['employees', 'has_employees']:
+            return self.plan.code == 'premium' or getattr(self.plan, 'has_commissions', False)
         field_name = f"has_{feature_name}"
         return getattr(self.plan, field_name, False) or getattr(self.plan, feature_name, False)
 

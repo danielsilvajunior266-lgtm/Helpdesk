@@ -3,7 +3,7 @@ from apps.loyalty.models import LoyaltyProgram, LoyaltyAccount, LoyaltyEvent
 
 @admin.register(LoyaltyProgram)
 class LoyaltyProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'points_needed_for_reward', 'reward_description', 'points_per_service', 'is_active', 'company')
+    list_display = ('name', 'reward_type', 'reward_name', 'points_needed_for_reward', 'is_active', 'company')
     list_filter = ('is_active', 'company')
 
 

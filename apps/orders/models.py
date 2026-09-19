@@ -5,7 +5,8 @@ from apps.saas_core.models import TenantModel
 class ServiceOrder(TenantModel):
     STATUS_CHOICES = [
         ('waiting', 'Aguardando'),
-        ('in_progress', 'Em Execução / Lavagem'),
+        ('in_progress', 'Em Atendimento'),
+        ('washing', 'Em Atendimento'),
         ('completed', 'Pronto / Finalizado'),
         ('delivered', 'Entregue ao Cliente'),
         ('cancelled', 'Cancelado'),
@@ -72,9 +73,15 @@ class ServiceOrder(TenantModel):
         verbose_name = 'Ordem de Serviço'
         verbose_name_plural = 'Ordens de Serviço'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['company', 'status', '-created_at']),
+            models.Index(fields=['company', 'delivered_at']),
+            models.Index(fields=['customer', 'status']),
+            models.Index(fields=['company', 'billing_status']),
+        ]
 
     def __str__(self):
-        return f"OS #{self.id} - {self.vehicle.plate} ({self.get_status_display()})"
+        return f"Serviço nº {self.id} - {self.vehicle.plate} ({self.get_status_display()})"
 
     def save(self, *args, **kwargs):
         if not self.final_price:
@@ -113,6 +120,9 @@ class OrderPhoto(TenantModel):
         verbose_name = 'Foto da Vistoria'
         verbose_name_plural = 'Fotos da Vistoria'
         ordering = ['stage', 'created_at']
+        indexes = [
+            models.Index(fields=['order', 'stage']),
+        ]
 
     def __str__(self):
-        return f"Foto OS #{self.order_id} ({self.get_stage_display()})"
+        return f"Foto Serviço nº {self.order_id} ({self.get_stage_display()})"

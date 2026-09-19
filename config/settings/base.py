@@ -51,6 +51,7 @@ LOCAL_APPS = [
     'apps.billing',
     'apps.appointments',
     'apps.commissions',
+    'apps.employees',
     'apps.api',
     'apps.portal',
 ]
@@ -59,6 +60,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -118,6 +120,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# In-Memory High Performance Caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'autoflow-cache',
+        'TIMEOUT': 300,  # 5 minutos
+        'OPTIONS': {
+            'MAX_ENTRIES': 2000
+        }
+    }
+}
 
 # REST Framework & JWT
 REST_FRAMEWORK = {

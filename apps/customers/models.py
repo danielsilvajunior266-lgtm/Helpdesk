@@ -26,6 +26,11 @@ class Customer(TenantModel):
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['company', 'name']),
+            models.Index(fields=['company', 'phone']),
+            models.Index(fields=['company', 'user']),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.get_billing_type_display()})"
@@ -104,7 +109,7 @@ class Vehicle(TenantModel):
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='vehicles', verbose_name='Proprietário')
-    plate = models.CharField('Placa', max_length=10)
+    plate = models.CharField('Placa', max_length=10, db_index=True)
     brand = models.CharField('Marca / Fabricante', max_length=50)
     model = models.CharField('Modelo', max_length=50)
     color = models.CharField('Cor', max_length=30, blank=True)
@@ -116,6 +121,10 @@ class Vehicle(TenantModel):
         verbose_name_plural = 'Veículos'
         unique_together = ('company', 'plate')
         ordering = ['brand', 'model']
+        indexes = [
+            models.Index(fields=['company', 'plate']),
+            models.Index(fields=['customer']),
+        ]
 
     def __str__(self):
         return f"{self.brand} {self.model} - {self.plate.upper()}"

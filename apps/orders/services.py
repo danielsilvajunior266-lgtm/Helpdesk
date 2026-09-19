@@ -65,3 +65,42 @@ def cancel_service_order(order: ServiceOrder) -> ServiceOrder:
         revert_order_commission(order)
 
         return order
+
+
+def get_user_service_orders(user, company=None):
+    """
+    Recupera todas as ordens de serviço vinculadas ao motorista (User), considerando:
+    1. Vinculação direta do Customer ao User (customer__user=user)
+    2. Veículos do motorista (vehicle__customer__user=user ou placas dos veículos do motorista)
+    3. E-mail ou telefone do motorista correspondentes ao cadastro de cliente
+    Também realiza auto-sync de Customer records correspondentes.
+    """
+    from apps.customers.models import Customer, Vehicle
+    from django.db.models import Q
+
+    if not user or not user.is_authenticated:
+        return ServiceOrder.objects.none()
+
+    # Auto-link Customer profiles que tenham o mesmo email ou telefone mas estavam com user=None
+    if user.email:
+        Customer.objects.filter(user__isnull=True, email__iexact=user.email).update(user=user)
+    if getattr(user, 'phone', None) and user.phone:
+        Customer.objects.filter(user__isnull=True, phone=user.phone).update(user=user)
+
+    user_vehicle_plates = list(Vehicle.objects.filter(
+        Q(customer__user=user) | Q(customer__email__iexact=user.email if user.email else '---')
+    ).values_list('plate', flat=True))
+
+    q_filter = Q(customer__user=user) | Q(vehicle__customer__user=user)
+    if user_vehicle_plates:
+        q_filter |= Q(vehicle__plate__in=user_vehicle_plates)
+    if user.email:
+        q_filter |= Q(customer__email__iexact=user.email)
+    if getattr(user, 'phone', None) and user.phone:
+        q_filter |= Q(customer__phone=user.phone)
+
+    qs = ServiceOrder.objects.filter(q_filter)
+    if company:
+        qs = qs.filter(company=company)
+
+    return qs.select_related('company', 'vehicle', 'service_type', 'customer', 'assigned_to').prefetch_related('photos').distinct().order_by('-created_at')

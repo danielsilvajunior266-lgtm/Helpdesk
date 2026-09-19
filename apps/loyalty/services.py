@@ -36,7 +36,7 @@ def process_order_loyalty(order):
             event_type='earned',
             points=points,
             order=order,
-            description=f"Pontos pela OS #{order.id} - {order.service_type.name}"
+            description=f"Pontos pelo Serviço nº {order.id} - {order.service_type.name}"
         )
         return event
 
@@ -62,5 +62,5 @@ def revert_order_loyalty(order):
                 event_type='reversed',
                 points=reversal_points,
                 order=order,
-                description=f"Estorno da OS #{order.id} cancelada"
+                description=f"Estorno do Serviço nº {order.id} cancelado"
             )

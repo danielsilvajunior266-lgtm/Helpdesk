@@ -57,6 +57,58 @@ def test_fleet_monthly_billing_lifecycle(company_a, customer_fleet, vehicle_flee
     assert order1.billing_status == 'PAID'
     assert order2.billing_status == 'PAID'
 
-    # Deve ter gerado receita consolidada de R$ 120.00 no Livro Caixa
+    # Deve ter gerado receita consolidada de R$ 120.00 no Fluxo de Caixa
     entry = CashEntry.objects.filter(company=company_a, amount=Decimal('120.00'), entry_type='income').first()
     assert entry is not None
+
+
+@pytest.mark.django_db
+def test_add_and_remove_fleet_customer(auth_client, company_a, customer_retail):
+    from django.urls import reverse
+    from apps.customers.models import Customer
+
+    # 1. Promove cliente avulso para frotista
+    assert customer_retail.billing_type == 'per_service'
+    res = auth_client.post(reverse('billing:add_customer'), {'customer_id': customer_retail.id})
+    assert res.status_code == 302
+
+    customer_retail.refresh_from_db()
+    assert customer_retail.billing_type == 'monthly'
+
+    # 2. Reverte frotista para avulso
+    res2 = auth_client.post(reverse('billing:remove_customer', kwargs={'customer_id': customer_retail.id}))
+    assert res2.status_code == 302
+
+    customer_retail.refresh_from_db()
+    assert customer_retail.billing_type == 'per_service'
+
+
+@pytest.mark.django_db
+def test_fleet_customer_unbilled_notification(auth_client, company_a, customer_fleet, vehicle_fleet, service_wash):
+    from apps.orders.models import ServiceOrder
+    from apps.orders.services import complete_service_order
+
+    # Cria ordem de serviço concluída para o frotista
+    order = ServiceOrder.objects.create(
+        company=company_a,
+        customer=customer_fleet,
+        vehicle=vehicle_fleet,
+        service_type=service_wash,
+        price=Decimal('80.00'),
+        final_price=Decimal('80.00'),
+        status='in_progress'
+    )
+    complete_service_order(order)
+    assert order.billing_status == 'PENDING'
+
+    # Carrega página principal e verifica notificação de cobrança
+    res = auth_client.get('/')
+    assert res.status_code == 200
+    notifs = res.context['notifications']
+    fleet_notifs = [n for n in notifs if n['type'] == 'fleet_billing_due']
+    assert len(fleet_notifs) == 1
+    assert customer_fleet.name in fleet_notifs[0]['title']
+    assert '80.00' in fleet_notifs[0]['message']
+    assert vehicle_fleet.plate in fleet_notifs[0]['message']
+
+

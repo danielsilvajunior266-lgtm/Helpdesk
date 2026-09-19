@@ -1,11 +1,11 @@
 {
-    "name": "mobile_app",
-    "short_name": "mobile_app",
+    "name": "AutoFlow - Estética Automotiva",
+    "short_name": "AutoFlow",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#121519",
+    "theme_color": "#121519",
+    "description": "AutoFlow - O seu portal VIP de estética automotiva e lava-jato.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

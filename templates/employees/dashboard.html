@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestão de Funcionários - AutoFlow{% endblock %}
+{% block header_title %}Gestão de Funcionários & Equipe{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Info & Actions Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#D4AF37]/20 text-[#F5E6BE] border border-[#D4AF37]/40">
+                    Recurso Premium
+                </span>
+                <span class="text-xs text-[#9A9FA8]">Mês de Referência: <strong class="text-white">{{ current_ref_month }}</strong></span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-black text-white mt-1">Controle de Equipe e Diaristas</h1>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+            {% if active_tab == 'helpers' %}
+                <a href="{% url 'employees:daily_helper_create' %}" class="px-4 py-2 rounded-xl bg-[#1E232A] hover:bg-[#282F38] border border-[#A3734C]/40 text-[#F5E6BE] hover:text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5 text-[#D4AF37]"></i>
+                    <span>Cadastrar Ajudante</span>
+                </a>
+                <a href="{% url 'employees:daily_work_create' %}" class="gold-btn px-4 py-2 rounded-xl text-slate-950 text-xs font-black transition-all flex items-center gap-1.5 shadow-lg">
+                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                    <span>Lançar Nova Diária</span>
+                </a>
+            {% else %}
+                <a href="{% url 'employees:registered_employee_create' %}" class="gold-btn px-4 py-2 rounded-xl text-slate-950 text-xs font-black transition-all flex items-center gap-1.5 shadow-lg">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span>Novo Funcionário Registrado</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary Statistics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Funcionários Registrados -->
+        <div class="p-4 rounded-2xl carbon-card space-y-2 border border-[#A3734C]/25">
+            <div class="flex items-center justify-between text-xs text-[#9A9FA8] font-semibold">
+                <span>Funcionários Registrados</span>
+                <div class="w-7 h-7 rounded-lg icon-badge-3d flex items-center justify-center">
+                    <i data-lucide="users" class="w-3.5 h-3.5 text-[#1EA8D7]"></i>
+                </div>
+            </div>
+            <div class="flex items-baseline justify-between flex-wrap gap-1">
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-2xl font-black text-white">{{ total_active_employees }}</span>
+                    <span class="text-[10px] text-emerald-400 font-black uppercase">Ativo{{ total_active_employees|pluralize:"s" }}</span>
+                    {% if total_inactive_employees > 0 %}
+                    <span class="text-[10px] text-slate-500 font-semibold">({{ total_inactive_employees }} inativo{{ total_inactive_employees|pluralize:"s" }})</span>
+                    {% endif %}
+                </div>
+                <span class="text-[11px] text-slate-400 font-medium">Folha: <strong class="text-amber-300">R$ {{ total_monthly_payroll|floatformat:2 }}</strong></span>
+            </div>
+        </div>
+
+        <!-- Card 2: Ajudantes Diários Cadastrados -->
+        <div class="p-4 rounded-2xl carbon-card space-y-2 border border-[#A3734C]/25">
+            <div class="flex items-center justify-between text-xs text-[#9A9FA8] font-semibold">
+                <span>Ajudantes Diários (Diaristas)</span>
+                <div class="w-7 h-7 rounded-lg icon-badge-3d flex items-center justify-center">
+                    <i data-lucide="user-check" class="w-3.5 h-3.5 text-[#D4AF37]"></i>
+                </div>
+            </div>
+            <div class="flex items-baseline justify-between">
+                <span class="text-2xl font-black text-white">{{ total_daily_helpers }}</span>
+                <span class="text-[11px] text-slate-400 font-medium">Pago Mês: <strong class="text-emerald-400">R$ {{ current_month_daily_paid|floatformat:2 }}</strong></span>
+            </div>
+        </div>
+
+        <!-- Card 3: Diárias Pendentes de Pagamento -->
+        <div class="p-4 rounded-2xl carbon-card space-y-2 border border-[#A3734C]/25">
+            <div class="flex items-center justify-between text-xs text-[#9A9FA8] font-semibold">
+                <span>Diárias a Pagar</span>
+                <div class="w-7 h-7 rounded-lg icon-badge-3d flex items-center justify-center">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                </div>
+            </div>
+            <div class="flex items-baseline justify-between">
+                <span class="text-2xl font-black text-amber-300">{{ pending_daily_count }}</span>
+                <span class="text-[11px] text-slate-400 font-medium">Total: <strong class="text-amber-400">R$ {{ pending_daily_amount|floatformat:2 }}</strong></span>
+            </div>
+        </div>
+
+        <!-- Card 4: Total Gasto no Mês com Pessoal -->
+        <div class="p-4 rounded-2xl carbon-card space-y-2 border border-[#A3734C]/25 bg-gradient-to-br from-[#1E232A] to-[#121519]">
+            <div class="flex items-center justify-between text-xs text-[#9A9FA8] font-semibold">
+                <span>Total Equipe no Mês</span>
+                <div class="w-7 h-7 rounded-lg icon-badge-3d flex items-center justify-center">
+                    <i data-lucide="receipt" class="w-3.5 h-3.5 text-emerald-400"></i>
+                </div>
+            </div>
+            <div class="flex items-baseline justify-between">
+                <span class="text-2xl font-black text-emerald-300">R$ {{ total_staff_invested_month|floatformat:2 }}</span>
+                <span class="text-[10px] text-emerald-400/80 font-medium">Débito no Caixa</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs (Ajudante Diário vs Funcionário Registrado) -->
+    <div class="border-b border-[#A3734C]/25 flex items-center space-x-2 sm:space-x-4">
+        <a 
+            href="{% url 'employees:dashboard' %}?tab=helpers" 
+            class="px-4 py-3 text-sm font-bold flex items-center space-x-2 border-b-2 transition-all {% if active_tab == 'helpers' %}border-[#1EA8D7] text-[#38C5EE] bg-[#1EA8D7]/10 rounded-t-xl{% else %}border-transparent text-[#9A9FA8] hover:text-white hover:bg-slate-800/40 rounded-t-xl{% endif %}"
+        >
+            <i data-lucide="sun" class="w-4 h-4"></i>
+            <span>Ajudante Diário (Diaristas)</span>
+        </a>
+
+        <a 
+            href="{% url 'employees:dashboard' %}?tab=registered" 
+            class="px-4 py-3 text-sm font-bold flex items-center space-x-2 border-b-2 transition-all {% if active_tab == 'registered' %}border-[#D4AF37] text-[#F5E6BE] bg-[#D4AF37]/10 rounded-t-xl{% else %}border-transparent text-[#9A9FA8] hover:text-white hover:bg-slate-800/40 rounded-t-xl{% endif %}"
+        >
+            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            <span>Funcionários Registrados (Mensalistas)</span>
+        </a>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- ABA 1: AJUDANTES DIÁRIOS (DIARISTAS)                               -->
+    <!-- ================================================================== -->
+    {% if active_tab == 'helpers' %}
+    <div class="space-y-6">
+        
+        <!-- Lista de Diárias de Trabalho Lançadas -->
+        <div class="carbon-card rounded-3xl p-5 sm:p-6 border border-[#A3734C]/25 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                        <i data-lucide="calendar-check" class="w-5 h-5 text-[#1EA8D7]"></i>
+                        <span>Registro de Diárias de Trabalho</span>
+                    </h2>
+                    <p class="text-xs text-[#9A9FA8]">Diárias trabalhadas por ajudantes e quitação integrada ao Livro Caixa</p>
+                </div>
+                <a href="{% url 'employees:daily_work_create' %}" class="text-xs font-bold text-[#1EA8D7] hover:text-[#38C5EE] flex items-center gap-1 transition-colors">
+                    <span>+ Nova Diária</span>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-[#A3734C]/20 text-[#9A9FA8] uppercase text-[10px] tracking-wider bg-[#121519]/40">
+                            <th class="py-3 px-4 rounded-l-xl">Ajudante / Diarista</th>
+                            <th class="py-3 px-4">Data do Trabalho</th>
+                            <th class="py-3 px-4">Turno / Atividade</th>
+                            <th class="py-3 px-4">Valor Diária</th>
+                            <th class="py-3 px-4">Status Pagamento</th>
+                            <th class="py-3 px-4 text-right rounded-r-xl">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#A3734C]/10 text-slate-300">
+                        {% for work in daily_works %}
+                        <tr class="hover:bg-[#1E232A]/50 transition-colors">
+                            <td class="py-3.5 px-4 font-bold text-white flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-[#121519] border border-[#1EA8D7]/40 text-[#38C5EE] font-black flex items-center justify-center text-xs">
+                                    {{ work.helper.name|slice:":2"|upper }}
+                                </div>
+                                <div>
+                                    <span class="block">{{ work.helper.name }}</span>
+                                    {% if work.helper.phone %}
+                                    <span class="text-[10px] text-slate-400">{{ work.helper.phone }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="font-medium text-white">{{ work.work_date|date:"d/m/Y" }}</span>
+                                <span class="text-[10px] text-slate-400 block">{{ work.work_date|date:"l" }}</span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="font-semibold text-slate-200 block">{{ work.get_shift_display }}</span>
+                                <span class="text-[10px] text-slate-400 truncate max-w-[200px] block">{{ work.activity_description }}</span>
+                            </td>
+                            <td class="py-3.5 px-4 font-extrabold text-amber-300 font-mono text-sm">
+                                R$ {{ work.daily_rate|floatformat:2 }}
+                            </td>
+                            <td class="py-3.5 px-4">
+                                {% if work.status == 'paid' %}
+                                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                        <span>Pago em {{ work.paid_at|date:"d/m H:i" }}</span>
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1">
+                                        <i data-lucide="clock" class="w-3 h-3"></i>
+                                        <span>Pendente</span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3.5 px-4 text-right">
+                                {% if work.status == 'pending' %}
+                                    <a href="{% url 'employees:daily_work_pay' work.id %}" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all inline-flex items-center gap-1">
+                                        <i data-lucide="check" class="w-3 h-3"></i>
+                                        <span>Pagar Diária</span>
+                                    </a>
+                                {% else %}
+                                    <span class="text-[11px] text-slate-500 font-medium">Baixa Efetuada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-400">
+                                <i data-lucide="calendar-x" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+                                <p class="text-xs font-semibold">Nenhuma diária de trabalho registrada ainda.</p>
+                                <a href="{% url 'employees:daily_work_create' %}" class="text-xs font-bold text-[#1EA8D7] hover:underline mt-1 inline-block">Lançar primeira diária</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Lista de Ajudantes Cadastrados -->
+        <div class="carbon-card rounded-3xl p-5 sm:p-6 border border-[#A3734C]/25 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-[#D4AF37]"></i>
+                        <span>Ajudantes Diários Cadastrados</span>
+                    </h3>
+                    <p class="text-xs text-[#9A9FA8]">Lista de diaristas para acionamento rápido</p>
+                </div>
+                <a href="{% url 'employees:daily_helper_create' %}" class="text-xs font-bold text-[#D4AF37] hover:text-[#F5E6BE] transition-colors">
+                    + Cadastrar Ajudante
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {% for helper in daily_helpers %}
+                <div class="p-3.5 rounded-2xl bg-[#121519]/70 border border-[#A3734C]/20 flex items-start justify-between gap-3">
+                    <div class="min-w-0 space-y-1">
+                        <p class="text-xs font-bold text-white truncate">{{ helper.name }}</p>
+                        {% if helper.phone %}
+                        <p class="text-[11px] text-slate-400 flex items-center gap-1">
+                            <i data-lucide="phone" class="w-3 h-3 text-[#1EA8D7]"></i>
+                            <span>{{ helper.phone }}</span>
+                        </p>
+                        {% endif %}
+                        {% if helper.pix_key %}
+                        <p class="text-[10px] text-amber-300/80 font-mono truncate">PIX: {{ helper.pix_key }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'employees:daily_helper_edit' helper.id %}" class="p-1.5 rounded-lg bg-[#1E232A] hover:bg-slate-700 text-[#9A9FA8] hover:text-white transition-colors" title="Editar Ajudante">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+                {% empty %}
+                <div class="col-span-full py-4 text-center text-xs text-slate-400">
+                    Nenhum diarista cadastrado ainda. Clique em "+ Cadastrar Ajudante" para começar.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+
+    <!-- ================================================================== -->
+    <!-- ABA 2: FUNCIONÁRIOS REGISTRADOS (MENSALISTAS)                       -->
+    <!-- ================================================================== -->
+    {% if active_tab == 'registered' %}
+    <div class="space-y-6">
+
+        <!-- Lista de Funcionários Registrados -->
+        <div class="carbon-card rounded-3xl p-5 sm:p-6 border border-[#A3734C]/25 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                        <i data-lucide="briefcase" class="w-5 h-5 text-[#D4AF37]"></i>
+                        <span>Quadro de Funcionários Registrados</span>
+                    </h2>
+                    <p class="text-xs text-[#9A9FA8]">Colaboradores contratados fixos e controle de folha mensal</p>
+                </div>
+                <a href="{% url 'employees:registered_employee_create' %}" class="text-xs font-bold text-[#D4AF37] hover:text-[#F5E6BE] flex items-center gap-1 transition-colors">
+                    <span>+ Novo Funcionário</span>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-[#A3734C]/20 text-[#9A9FA8] uppercase text-[10px] tracking-wider bg-[#121519]/40">
+                            <th class="py-3 px-4 rounded-l-xl">Colaborador</th>
+                            <th class="py-3 px-4">Cargo / Função</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4">Salário Mensal</th>
+                            <th class="py-3 px-4">Dia Pagamento</th>
+                            <th class="py-3 px-4">Status Mês ({{ current_ref_month }})</th>
+                            <th class="py-3 px-4 text-right rounded-r-xl">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#A3734C]/10 text-slate-300">
+                        {% for item in registered_employees %}
+                        <tr class="hover:bg-[#1E232A]/50 transition-colors {% if not item.employee.is_active %}opacity-60 bg-[#121519]/40{% endif %}">
+                            <td class="py-3.5 px-4 font-bold text-white flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl {% if item.employee.is_active %}bg-gradient-to-tr from-[#D4AF37] to-[#A3734C] text-[#121519]{% else %}bg-slate-800 border border-slate-700 text-slate-400{% endif %} font-black flex items-center justify-center text-xs shadow-md">
+                                    {{ item.employee.name|slice:":2"|upper }}
+                                </div>
+                                <div>
+                                    <span class="block {% if not item.employee.is_active %}text-slate-300 line-through{% endif %}">{{ item.employee.name }}</span>
+                                    <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                                        {% if item.employee.phone %}<span>{{ item.employee.phone }}</span>{% endif %}
+                                        {% if item.employee.pix_key %}<span class="text-amber-300/80 font-mono">PIX: {{ item.employee.pix_key }}</span>{% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="font-semibold text-[#F5E6BE]">{{ item.employee.role_title }}</span>
+                                <span class="text-[10px] text-slate-400 block">Desde {{ item.employee.hire_date|date:"d/m/Y" }}</span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                {% if item.employee.is_active %}
+                                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                        <span>Ativo</span>
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1" title="Colaborador desligado/demitido">
+                                        <i data-lucide="user-x" class="w-3 h-3 text-rose-400"></i>
+                                        <span>Inativo</span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3.5 px-4 font-black text-amber-300 font-mono text-sm">
+                                R$ {{ item.employee.monthly_salary|floatformat:2 }}
+                            </td>
+                            <td class="py-3.5 px-4 font-semibold text-slate-300">
+                                Todo dia {{ item.employee.payment_day }}
+                            </td>
+                            <td class="py-3.5 px-4">
+                                {% if not item.employee.is_active %}
+                                    <span class="text-[11px] text-slate-500 italic">Desativado</span>
+                                {% elif item.is_paid_this_month %}
+                                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                        <span>Salário Pago</span>
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1">
+                                        <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                                        <span>Aguardando Pagamento</span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3.5 px-4 text-right">
+                                <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                    {% if item.employee.is_active %}
+                                        <a href="{% url 'employees:salary_payment_create' item.employee.id %}" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37] hover:bg-[#b88f28] text-slate-950 font-black text-[11px] shadow-sm transition-all inline-flex items-center gap-1" title="Lançar Pagamento de Salário">
+                                            <i data-lucide="dollar-sign" class="w-3 h-3"></i>
+                                            <span>Pagar Salário</span>
+                                        </a>
+                                        <a href="{% url 'employees:registered_employee_toggle_status' item.employee.id %}" onclick="return confirm('Deseja desativar o funcionário {{ item.employee.name }}? Ele deixará de aparecer nos alertas de pagamentos e notificações.')" class="p-1.5 rounded-lg bg-[#1E232A] hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-transparent hover:border-rose-500/30 transition-colors" title="Desativar Funcionário (Demitido/Desligado)">
+                                            <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'employees:registered_employee_toggle_status' item.employee.id %}" onclick="return confirm('Deseja reativar o funcionário {{ item.employee.name }} na empresa?')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-emerald-950/50 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold transition-all inline-flex items-center gap-1" title="Reativar Funcionário">
+                                            <i data-lucide="user-check" class="w-3 h-3"></i>
+                                            <span>Reativar</span>
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'employees:registered_employee_edit' item.employee.id %}" class="p-1.5 rounded-lg bg-[#1E232A] hover:bg-slate-700 text-[#9A9FA8] hover:text-white transition-colors" title="Editar Dados">
+                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-slate-400">
+                                <i data-lucide="user-x" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+                                <p class="text-xs font-semibold">Nenhum funcionário registrado cadastrado ainda.</p>
+                                <a href="{% url 'employees:registered_employee_create' %}" class="text-xs font-bold text-[#D4AF37] hover:underline mt-1 inline-block">Cadastrar primeiro funcionário</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Histórico de Pagamentos de Salários Efetuados -->
+        <div class="carbon-card rounded-3xl p-5 sm:p-6 border border-[#A3734C]/25 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Histórico de Pagamentos de Salário</span>
+                    </h3>
+                    <p class="text-xs text-[#9A9FA8]">Comprovantes e saídas debitadas no Livro Caixa</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-[#A3734C]/20 text-[#9A9FA8] uppercase text-[10px] tracking-wider bg-[#121519]/40">
+                            <th class="py-2.5 px-4 rounded-l-xl">Funcionário</th>
+                            <th class="py-2.5 px-4">Mês de Referência</th>
+                            <th class="py-2.5 px-4">Salário Base</th>
+                            <th class="py-2.5 px-4">Bônus / Descontos</th>
+                            <th class="py-2.5 px-4">Total Pago</th>
+                            <th class="py-2.5 px-4">Data Pagamento</th>
+                            <th class="py-2.5 px-4 rounded-r-xl">Forma</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#A3734C]/10 text-slate-300">
+                        {% for pay in salary_payments %}
+                        <tr class="hover:bg-[#1E232A]/50 transition-colors">
+                            <td class="py-3 px-4 font-bold text-white">{{ pay.employee.name }}</td>
+                            <td class="py-3 px-4 font-semibold text-[#1EA8D7]">{{ pay.reference_month }}</td>
+                            <td class="py-3 px-4">R$ {{ pay.base_salary|floatformat:2 }}</td>
+                            <td class="py-3 px-4 text-[11px]">
+                                {% if pay.bonus > 0 %}<span class="text-emerald-400">+R$ {{ pay.bonus|floatformat:2 }}</span>{% endif %}
+                                {% if pay.deductions > 0 %}<span class="text-rose-400">-R$ {{ pay.deductions|floatformat:2 }}</span>{% endif %}
+                                {% if pay.bonus == 0 and pay.deductions == 0 %}<span class="text-slate-500">-</span>{% endif %}
+                            </td>
+                            <td class="py-3 px-4 font-black text-emerald-300 font-mono">R$ {{ pay.total_paid|floatformat:2 }}</td>
+                            <td class="py-3 px-4 text-slate-400">{{ pay.payment_date|date:"d/m/Y" }}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-0.5 rounded bg-slate-800 text-[#F5E6BE] text-[10px] font-bold uppercase">{{ pay.get_payment_method_display }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="py-6 text-center text-slate-500 text-xs">
+                                Nenhum pagamento de salário registrado ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

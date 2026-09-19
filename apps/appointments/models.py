@@ -54,6 +54,11 @@ class Appointment(TenantModel):
         verbose_name = 'Agendamento'
         verbose_name_plural = 'Agendamentos'
         ordering = ['scheduled_date', 'scheduled_time']
+        indexes = [
+            models.Index(fields=['company', 'scheduled_date', 'scheduled_time']),
+            models.Index(fields=['company', 'status']),
+            models.Index(fields=['customer', 'status']),
+        ]
 
     def __str__(self):
         return f"{self.customer.name} - {self.vehicle.plate} ({self.scheduled_date} às {self.scheduled_time})"

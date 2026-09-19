@@ -5,7 +5,7 @@ from apps.api import views
 urlpatterns = [
     # Autenticação JWT do Cliente Motorista
     path('auth/register/', views.RegisterCustomerAPIView.as_view(), name='register_customer'),
-    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Descoberta de Lava-jatos e Catálogos
@@ -15,9 +15,11 @@ urlpatterns = [
 
     # Garagem Digital (Veículos do Cliente)
     path('vehicles/', views.CustomerVehicleListCreateAPIView.as_view(), name='customer_vehicles'),
+    path('vehicles/<int:pk>/', views.CustomerVehicleDetailAPIView.as_view(), name='customer_vehicle_detail'),
 
     # Agendamentos Online
     path('appointments/', views.CustomerAppointmentsListAPIView.as_view(), name='customer_appointments'),
+    path('appointments/<int:pk>/cancel/', views.AppointmentCancelAPIView.as_view(), name='cancel_appointment'),
     path('appointments/book/', views.AppointmentCreateAPIView.as_view(), name='book_appointment'),
 
     # Acompanhamento em Tempo Real & Fotos Antes/Depois
@@ -25,4 +27,5 @@ urlpatterns = [
 
     # Clube de Fidelidade
     path('loyalty/', views.CustomerLoyaltyBalanceAPIView.as_view(), name='customer_loyalty'),
+    path('loyalty/all/', views.CustomerAllLoyaltyAccountsAPIView.as_view(), name='customer_all_loyalty'),
 ]

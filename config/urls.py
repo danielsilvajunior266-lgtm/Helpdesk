@@ -8,7 +8,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include(('apps.accounts.urls', 'accounts'), namespace='accounts')),
+    path('accounts/', include(('apps.accounts.urls', 'accounts'), namespace='accounts')),
+    path('auth/', include('apps.accounts.urls')),
     path('', include(('apps.orders.urls', 'orders'), namespace='orders')),
     path('customers/', include(('apps.customers.urls', 'customers'), namespace='customers')),
     path('services/', include(('apps.services.urls', 'services'), namespace='services')),
@@ -16,6 +17,7 @@ urlpatterns = [
     path('loyalty/', include(('apps.loyalty.urls', 'loyalty'), namespace='loyalty')),
     path('billing/', include(('apps.billing.urls', 'billing'), namespace='billing')),
     path('appointments/', include(('apps.appointments.urls', 'appointments'), namespace='appointments')),
+    path('employees/', include(('apps.employees.urls', 'employees'), namespace='employees')),
     path('commissions/', include(('apps.commissions.urls', 'commissions'), namespace='commissions')),
     path('portal/', include(('apps.portal.urls', 'portal'), namespace='portal')),
     path('api/v1/', include(('apps.api.urls', 'api'), namespace='api')),

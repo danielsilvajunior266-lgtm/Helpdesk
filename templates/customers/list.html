@@ -14,12 +14,12 @@
 <div class="space-y-6">
     <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+            <table class="w-full text-left text-xs whitespace-nowrap min-w-[760px]">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800 text-[10px]">
                     <tr>
                         <th class="px-6 py-4 font-semibold">Cliente</th>
                         <th class="px-6 py-4 font-semibold">Contato</th>
-                        <th class="px-6 py-4 font-semibold">Tipo Faturamento</th>
+                        <th class="px-6 py-4 font-semibold text-center">Tipo Faturamento</th>
                         <th class="px-6 py-4 font-semibold">Veículos na Garagem</th>
                         <th class="px-6 py-4 font-semibold text-right">Ações</th>
                     </tr>
@@ -27,11 +27,11 @@
                 <tbody class="divide-y divide-slate-800/80">
                     {% for customer in customers %}
                     <tr class="hover:bg-slate-900/40 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
                                 <strong class="text-white text-sm block">{{ customer.name }}</strong>
                                 {% if customer.is_vip %}
-                                <span class="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F5E6BE] text-[10px] font-extrabold flex items-center gap-1 shadow-sm shadow-[#D4AF37]/20">
+                                <span class="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F5E6BE] text-[10px] font-extrabold flex items-center gap-1 shadow-sm shadow-[#D4AF37]/20 whitespace-nowrap">
                                     <i data-lucide="crown" class="w-3 h-3 text-[#D4AF37]"></i>
                                     <span>CLIENTE VIP</span>
                                 </span>
@@ -39,33 +39,34 @@
                             </div>
                             <span class="text-slate-500 text-[11px]">{{ customer.document|default:"Documento não informado" }}</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-slate-300 block">{{ customer.phone }}</span>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-slate-300 block font-medium">{{ customer.phone }}</span>
                             <span class="text-slate-500 text-[11px]">{{ customer.email }}</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider whitespace-nowrap shadow-sm
                                 {% if customer.billing_type == 'monthly' %}
-                                    bg-indigo-500/10 text-indigo-400 border border-indigo-500/20
+                                    bg-indigo-500/15 text-indigo-300 border border-indigo-500/30
                                 {% else %}
-                                    bg-slate-800 text-slate-300
+                                    bg-slate-800 text-slate-300 border border-slate-700/60
                                 {% endif %}">
-                                {{ customer.get_billing_type_display }}
+                                <span class="w-1.5 h-1.5 rounded-full {% if customer.billing_type == 'monthly' %}bg-indigo-400{% else %}bg-slate-400{% endif %}"></span>
+                                <span>{{ customer.get_billing_type_display }}</span>
                             </span>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex flex-wrap gap-1.5 items-center">
                                 {% for v in customer.vehicles.all %}
-                                <span class="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-200 font-mono text-[11px] font-bold uppercase">
+                                <span class="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-200 font-mono text-[11px] font-bold uppercase whitespace-nowrap">
                                     {{ v.plate }} ({{ v.model }})
                                 </span>
                                 {% empty %}
-                                <span class="text-slate-500 italic text-[11px]">Nenhum veículo</span>
+                                <span class="text-slate-500 italic text-[11px] whitespace-nowrap">Nenhum veículo</span>
                                 {% endfor %}
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <a href="{% url 'customers:vehicle_create' customer.id %}" class="px-3 py-1.5 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <a href="{% url 'customers:vehicle_create' customer.id %}" class="px-3 py-1.5 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 text-xs font-semibold inline-flex items-center gap-1 transition-colors whitespace-nowrap">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                 <span>Adicionar Veículo</span>
                             </a>

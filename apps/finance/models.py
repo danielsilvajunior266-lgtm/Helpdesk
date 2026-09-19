@@ -62,6 +62,10 @@ class CashEntry(TenantModel):
         verbose_name = 'Lançamento de Caixa'
         verbose_name_plural = 'Livro Caixa'
         ordering = ['-entry_date', '-created_at']
+        indexes = [
+            models.Index(fields=['company', '-entry_date']),
+            models.Index(fields=['company', 'entry_type', '-entry_date']),
+        ]
 
     def __str__(self):
         sign = '+' if self.entry_type == 'income' else '-'

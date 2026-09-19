@@ -54,4 +54,4 @@ class EmployeeCommission(TenantModel):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.employee.get_full_name() or self.employee.username}: R$ {self.amount} (OS #{self.order_id})"
+        return f"{self.employee.get_full_name() or self.employee.username}: R$ {self.amount} (Serviço nº {self.order_id})"

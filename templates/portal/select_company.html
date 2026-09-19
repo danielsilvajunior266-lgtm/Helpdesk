@@ -1,147 +1,16 @@
+{% extends "portal/base_portal.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br" class="dark h-full bg-[#121519]">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escolher Lava-Jato VIP - Estética Automotiva Premium</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        gold: {
-                            50: '#fdfbf2',
-                            100: '#faf4df',
-                            200: '#f3e6b7',
-                            300: '#ead285',
-                            400: '#dfbc52',
-                            500: '#d4af37',
-                            600: '#b88f28',
-                            700: '#936d22',
-                            800: '#795722',
-                            900: '#674820',
-                            950: '#3c270e',
-                        },
-                        obsidian: {
-                            800: '#111827',
-                            900: '#0b111e',
-                            950: '#070b13',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+{% load plate_tags %}
 
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #121519;
-            color: #F5F5F7;
-        }
-        .glass-card {
-            background: rgba(30, 35, 42, 0.90);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.25);
-        }
-        .gold-btn {
-            background: linear-gradient(135deg, #D4AF37 0%, #C5A059 50%, #A3734C 100%);
-            color: #121519;
-            font-weight: 800;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
-            border: 1px solid rgba(245, 230, 190, 0.4);
-            transition: all 300ms ease;
-        }
-        .gold-btn:hover {
-            background: linear-gradient(135deg, #F5E6BE 0%, #D4AF37 50%, #C5A059 100%);
-            box-shadow: 0 6px 22px rgba(30, 168, 215, 0.45);
-            transform: translateY(-1px);
-        }
-        .gold-gradient-text {
-            background: linear-gradient(135deg, #F5E6BE 0%, #D4AF37 50%, #A3734C 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #121519;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1E232A;
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #D4AF37;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col antialiased bg-[#121519] text-[#F5F5F7] selection:bg-[#1EA8D7] selection:text-[#121519]">
+{% block title %}Rede AutoFlow - Estética Automotiva VIP{% endblock %}
 
-    <!-- Top Bar -->
-    <header class="sticky top-0 z-40 glass-card border-b border-[#A3734C]/25">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <!-- Brand -->
-            <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-xl bg-[#121519] border border-[#D4AF37]/50 p-1 shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img src="{% static 'images/logo.png' %}?v=4" alt="Logo" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
-                </div>
-                <div>
-                    <span class="font-extrabold text-base sm:text-lg tracking-tight text-white block">AutoFlow</span>
-                    <span class="text-[10px] gold-gradient-text font-bold uppercase tracking-wider block -mt-0.5">Estética Automotiva</span>
-                </div>
-            </div>
+{% block content %}
+<div class="space-y-8 sm:space-y-10">
 
-            <!-- User Status / Auth -->
-            <div class="flex items-center space-x-3">
-                {% if user.is_authenticated %}
-                <div class="hidden sm:block text-right">
-                    <div class="text-xs font-bold text-white">{{ user.first_name|default:user.username }}</div>
-                    <div class="text-[10px] text-[#D4AF37] font-bold flex items-center justify-end space-x-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#1EA8D7] animate-pulse"></span>
-                        <span>Cliente</span>
-                    </div>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#D4AF37] to-[#A3734C] p-0.5 shadow-md flex items-center justify-center">
-                    <div class="w-full h-full bg-[#121519] rounded-[10px] flex items-center justify-center font-extrabold text-[#F5E6BE] text-xs">
-                        {{ user.first_name|default:user.username|slice:":2"|upper }}
-                    </div>
-                </div>
-                <a href="{% url 'accounts:logout' %}" title="Sair da Conta" class="p-2.5 rounded-xl bg-[#1E232A] border border-[#A3734C]/30 text-[#9A9FA8] hover:text-rose-400 hover:border-rose-500/40 transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                </a>
-                {% else %}
-                <a href="{% url 'accounts:login' %}" class="gold-btn px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 transition-all">
-                    <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
-                    <span>Entrar</span>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10">
-
+    <!-- ============================================================== -->
+    <!-- TAB 1: INÍCIO (SELEÇÃO DE LAVA-JATO CREDENCIADO)                -->
+    <!-- ============================================================== -->
+    <section id="tab-pane-home" class="tab-content space-y-8 sm:space-y-10">
         <!-- Welcome & Search Section -->
         <div class="text-center max-w-3xl mx-auto space-y-5">
             <div class="inline-flex items-center justify-center w-28 h-28 rounded-3xl bg-[#121519] border border-[#D4AF37]/50 p-2.5 shadow-2xl shadow-[#D4AF37]/25 mb-2 group hover:scale-105 transition-transform overflow-hidden">
@@ -189,11 +58,9 @@
             </div>
         </div>
 
-        <!-- ============================================================== -->
-        <!-- SEÇÃO: ÚLTIMO LAVA-JATO VISITADO / FREQUENTE                   -->
-        <!-- ============================================================== -->
+        <!-- SEÇÃO: ÚLTIMO LAVA-JATO VISITADO / FREQUENTE -->
         {% if last_visited_company %}
-        <section class="animate-fade-in">
+        <div class="animate-fade-in">
             <div class="rounded-3xl bg-gradient-to-br from-amber-500/10 via-slate-900 to-slate-900 border border-amber-500/30 p-6 sm:p-8 glow-amber relative overflow-hidden">
                 <!-- Background Accent Glow -->
                 <div class="absolute -right-16 -top-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -274,14 +141,11 @@
 
                 </div>
             </div>
-        </section>
+        </div>
         {% endif %}
 
-
-        <!-- ============================================================== -->
-        <!-- SEÇÃO: LISTA DE TODOS OS LAVA-JATOS CREDENCIADOS               -->
-        <!-- ============================================================== -->
-        <section class="space-y-4">
+        <!-- LISTA DE TODOS OS LAVA-JATOS CREDENCIADOS -->
+        <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
@@ -371,7 +235,7 @@
                             href="{% url 'portal:switch_company' c.id %}" 
                             class="gold-btn w-full py-3 rounded-xl text-xs font-black flex items-center justify-center space-x-2 transition-all shadow-lg"
                         >
-                            <span>Selecionar este Lava-Jato</span>
+                            <span>Acessar este Lava-Jato</span>
                             <i data-lucide="chevron-right" class="w-4 h-4"></i>
                         </a>
                     </div>
@@ -402,64 +266,557 @@
                     Limpar pesquisa
                 </button>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
 
-    <!-- Footer -->
-    <footer class="mt-auto py-8 border-t border-slate-800/80 text-center text-xs text-slate-500">
-        <p>© 2026 AutoFlow - Plataforma de Gestão e Agendamento para Estética Automotiva.</p>
-    </footer>
+    <!-- ============================================================== -->
+    <!-- TAB 2: MEU CARRO NO PÁTIO (LIVE TRACKER MULTI-UNIDADE)        -->
+    <!-- ============================================================== -->
+    <section id="tab-pane-orders" class="tab-content hidden space-y-6">
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="car" class="w-5 h-5 text-emerald-400"></i>
+                <span>Acompanhamento em Tempo Real dos seus Veículos</span>
+            </h2>
+            <p class="text-xs text-[#9A9FA8]">Acompanhe o status e a vistoria fotográfica de todos os seus carros em atendimento em qualquer unidade da rede</p>
+        </div>
 
-    <!-- Initialize Lucide Icons & Live Search Logic -->
-    <script>
-        lucide.createIcons();
+        {% if active_orders %}
+            <div class="space-y-6">
+                {% for order in active_orders %}
+                <div class="rounded-3xl carbon-card p-5 sm:p-7 shadow-2xl space-y-6 border border-[#A3734C]/30">
+                    
+                    <!-- Header da OS com Destaque do Lava-Jato -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#A3734C]/20">
+                        <div class="flex items-center space-x-4">
+                            {% render_plate order.vehicle.plate 'md' %}
+                            <div>
+                                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                    <h3 class="font-extrabold text-lg text-white">
+                                        {{ order.vehicle.brand }} {{ order.vehicle.model }}
+                                    </h3>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#1EA8D7]/15 text-[#38C5EE] border border-[#1EA8D7]/30 whitespace-nowrap">
+                                        Serviço nº {{ order.id }}
+                                    </span>
+                                    <!-- BADGE DA EMPRESA / LAVA-JATO -->
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D4AF37]/15 text-[#F5E6BE] border border-[#D4AF37]/35 whitespace-nowrap inline-flex items-center space-x-1.5 shadow-sm">
+                                        <i data-lucide="store" class="w-3.5 h-3.5 text-[#D4AF37]"></i>
+                                        <span>{{ order.company.name }}</span>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-[#9A9FA8] mt-1 flex flex-wrap items-center gap-x-2">
+                                    <span>Lava-Jato: <strong class="text-white">{{ order.company.name }}</strong></span>
+                                    {% if order.company.address %}
+                                    <span class="text-slate-600">•</span>
+                                    <span class="text-[11px] text-slate-300 inline-flex items-center space-x-1">
+                                        <i data-lucide="map-pin" class="w-3 h-3 text-[#1EA8D7]"></i>
+                                        <span>{{ order.company.address|truncatechars:35 }}</span>
+                                    </span>
+                                    {% endif %}
+                                    <span class="text-slate-600">•</span>
+                                    <span>Serviço: <strong class="text-[#F5E6BE]">{{ order.service_type.name }}</strong></span>
+                                    {% if order.assigned_to %}
+                                        <span class="text-slate-600">•</span>
+                                        <span>Profissional: {{ order.assigned_to.first_name|default:order.assigned_to.username }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
 
-        function filterCompaniesLive(query) {
-            const normalized = query.toLowerCase().trim();
-            const cards = document.querySelectorAll('.company-card');
-            const clearBtn = document.getElementById('clearSearchBtn');
-            const noResultsBox = document.getElementById('noResultsBox');
-            const badge = document.getElementById('companyCountBadge');
+                        <!-- Status Badge -->
+                        <div>
+                            <span class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold uppercase
+                                {% if order.status == 'in_progress' or order.status == 'washing' %}bg-[#1EA8D7]/20 text-[#38C5EE] border border-[#1EA8D7]/40
+                                {% elif order.status == 'completed' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+                                {% elif order.status == 'delivered' %}bg-purple-500/20 text-purple-300 border border-purple-500/30
+                                {% else %}bg-[#D4AF37]/20 text-[#F5E6BE] border border-[#D4AF37]/35{% endif %}">
+                                <span class="w-2 h-2 rounded-full {% if order.status == 'in_progress' or order.status == 'washing' %}bg-[#1EA8D7] animate-pulse{% elif order.status == 'completed' %}bg-emerald-400{% elif order.status == 'delivered' %}bg-purple-400{% else %}bg-[#D4AF37]{% endif %}"></span>
+                                <span>{% if order.status == 'in_progress' or order.status == 'washing' %}Em Atendimento{% else %}{{ order.get_status_display }}{% endif %}</span>
+                            </span>
+                        </div>
+                    </div>
 
-            if (normalized.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
+                    <!-- Step Tracker (Progresso Visual) -->
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold text-[#9A9FA8] flex items-center justify-between">
+                            <span>Etapas do Atendimento:</span>
+                            <span class="text-[#1EA8D7]">
+                                {% if order.status == 'waiting' %}Fase 1 de 4 (Na Fila)
+                                {% elif order.status == 'in_progress' or order.status == 'washing' %}Fase 2 de 4 (Em Atendimento)
+                                {% elif order.status == 'completed' %}Fase 3 de 4 (Pronto para Retirada)
+                                {% elif order.status == 'delivered' %}Fase 4 de 4 (Entregue)
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-2 pt-2">
+                            <!-- Step 1: Recebido -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status in 'waiting,in_progress,washing,completed,delivered' %}bg-[#1EA8D7]/20 border-[#1EA8D7]/40 text-[#38C5EE]{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="check" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">1. Na Fila</span>
+                            </div>
 
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const name = card.getAttribute('data-company-name') || '';
-                const address = card.getAttribute('data-company-address') || '';
-                const city = card.getAttribute('data-company-city') || '';
+                            <!-- Step 2: Em Atendimento -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status in 'in_progress,washing,completed,delivered' %}bg-[#1EA8D7]/20 border-[#1EA8D7]/40 text-[#38C5EE]{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="spray-can" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">2. Em Atendimento</span>
+                            </div>
 
-                if (name.includes(normalized) || address.includes(normalized) || city.includes(normalized)) {
-                    card.classList.remove('hidden');
-                    visibleCount++;
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
+                            <!-- Step 3: Pronto -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status in 'completed,delivered' %}bg-emerald-600/20 border-emerald-500/40 text-emerald-300{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="sparkles" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">3. Pronto</span>
+                            </div>
 
-            if (badge) {
-                badge.innerText = visibleCount;
-            }
+                            <!-- Step 4: Entregue -->
+                            <div class="p-2.5 rounded-2xl text-center border text-xs font-bold transition-all
+                                {% if order.status == 'delivered' %}bg-emerald-600/20 border-emerald-500/40 text-emerald-300{% else %}bg-[#121519] border-[#A3734C]/20 text-[#9A9FA8]{% endif %}">
+                                <i data-lucide="key" class="w-4 h-4 mx-auto mb-1"></i>
+                                <span class="text-[10px] sm:text-xs">4. Entregue</span>
+                            </div>
+                        </div>
+                    </div>
 
-            if (visibleCount === 0 && cards.length > 0) {
-                noResultsBox.classList.remove('hidden');
-            } else {
-                noResultsBox.classList.add('hidden');
-            }
+                    <!-- Vistoria Fotográfica (Antes & Depois) -->
+                    {% if order.company.plan.has_inspections %}
+                    <div class="pt-4 border-t border-[#A3734C]/20 space-y-3">
+                        <div class="flex items-center space-x-2 text-xs font-bold text-slate-300">
+                            <i data-lucide="camera" class="w-4 h-4 text-purple-400"></i>
+                            <span>Vistoria Fotográfica na Unidade (Antes & Depois):</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Foto Antes -->
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-2">
+                                <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">Foto Entrada (Antes)</span>
+                                <div class="h-40 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-800">
+                                    {% if order.before_photo and order.before_photo.image %}
+                                        <img src="{{ order.before_photo.image.url }}" alt="Foto Antes" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="text-slate-600 text-center p-4">
+                                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-1 opacity-40"></i>
+                                            <span class="text-[11px]">Foto registrada no checklist de entrada</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Foto Depois -->
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-2">
+                                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">Foto Entrega (Depois)</span>
+                                <div class="h-40 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-800">
+                                    {% if order.after_photo and order.after_photo.image %}
+                                        <img src="{{ order.after_photo.image.url }}" alt="Foto Depois" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="text-slate-600 text-center p-4">
+                                            <i data-lucide="sparkles" class="w-8 h-8 mx-auto mb-1 opacity-40"></i>
+                                            <span class="text-[11px]">Foto será capturada após a finalização</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="py-16 text-center bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 space-y-3">
+                <div class="w-16 h-16 rounded-3xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-500">
+                    <i data-lucide="car" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-slate-200 font-bold text-base">Nenhum veículo em atendimento no momento</h3>
+                <p class="text-slate-400 text-xs max-w-md mx-auto">
+                    Assim que você der entrada em qualquer lava-jato credenciado, poderá acompanhar todas as etapas e fotos em tempo real por aqui.
+                </p>
+                <button onclick="switchTab('home')" class="gold-btn inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all">
+                    <i data-lucide="store" class="w-4 h-4"></i>
+                    <span>Ver Lava-Jatos Disponíveis</span>
+                </button>
+            </div>
+        {% endif %}
+
+        <!-- Histórico Recente de Atendimentos -->
+        {% if recent_orders %}
+        <div class="pt-6 space-y-3">
+            <h3 class="text-sm font-bold text-slate-300 flex items-center space-x-2">
+                <i data-lucide="history" class="w-4 h-4 text-[#D4AF37]"></i>
+                <span>Histórico de Atendimentos Concluídos</span>
+            </h3>
+            <div class="space-y-2">
+                {% for ro in recent_orders %}
+                <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs hover:border-slate-700 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        {% render_plate ro.vehicle.plate 'sm' %}
+                        <div>
+                            <div class="font-bold text-white flex items-center space-x-2">
+                                <span>{{ ro.service_type.name }}</span>
+                                <span class="text-[10px] text-[#D4AF37] font-semibold bg-[#D4AF37]/10 px-1.5 py-0.5 rounded border border-[#D4AF37]/20 flex items-center space-x-1">
+                                    <i data-lucide="store" class="w-3 h-3"></i>
+                                    <span>{{ ro.company.name }}</span>
+                                </span>
+                            </div>
+                            <div class="text-[11px] text-slate-400">{{ ro.created_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-emerald-400">R$ {{ ro.final_price|floatformat:2 }}</div>
+                        <span class="text-[10px] text-slate-400 uppercase">Concluído</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: CLUBE DE FIDELIDADE (VIP)                              -->
+    <!-- ============================================================== -->
+    <section id="tab-pane-loyalty" class="tab-content hidden space-y-6">
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="gift" class="w-5 h-5 text-pink-400"></i>
+                <span>Programa de Fidelidade VIP AutoFlow</span>
+            </h2>
+            <p class="text-xs text-[#9A9FA8]">Consulte seus pontos acumulados e prêmios em cada centro de estética credenciado</p>
+        </div>
+
+        {% if loyalty_accounts %}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {% for acc in loyalty_accounts %}
+                <div class="card-gradient-pink rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="text-[11px] font-extrabold uppercase tracking-wider text-pink-300 flex items-center space-x-1.5">
+                                <i data-lucide="store" class="w-3.5 h-3.5"></i>
+                                <span>{{ acc.company.name }}</span>
+                            </div>
+                            <div class="text-lg sm:text-xl font-black text-white mt-1">
+                                {{ user.get_full_name|default:user.username|default:"Cliente VIP" }}
+                            </div>
+                        </div>
+                        <div class="w-11 h-11 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300">
+                            <i data-lucide="crown" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <div class="my-5 space-y-2">
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-3xl font-black text-white tracking-tight">
+                                {{ acc.points_balance }} <span class="text-base font-bold text-pink-300">pts</span>
+                            </span>
+                            <span class="text-xs font-bold text-pink-200">
+                                Unidade VIP
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-pink-200 pt-3 border-t border-pink-500/20">
+                        <span>{{ acc.company.city|default:"Rede Credenciada" }}</span>
+                        <a href="{% url 'portal:switch_company' acc.company.id %}?tab=loyalty" class="font-bold underline hover:text-white flex items-center space-x-1">
+                            <span>Ver Detalhes</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Cartão Digital Padrão Geral -->
+            <div class="max-w-xl mx-auto card-gradient-pink rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="text-[11px] font-extrabold uppercase tracking-wider text-pink-300">Cartão de Fidelidade AutoFlow</div>
+                        <div class="text-xl sm:text-2xl font-black text-white mt-1">
+                            {{ user.get_full_name|default:user.username|default:"Cliente VIP" }}
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-300">
+                        <i data-lucide="crown" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="my-6 space-y-2">
+                    <p class="text-xs text-pink-100 leading-relaxed">
+                        Ao realizar serviços nos lava-jatos credenciados com programa de fidelidade ativo, seus pontos serão creditados automaticamente no seu cartão digital.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-pink-200 pt-2 border-t border-pink-500/20">
+                    <span>Rede AutoFlow</span>
+                    <span>Acumule e troque por serviços grátis</span>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: MINHA GARAGEM DIGITAL                                   -->
+    <!-- ============================================================== -->
+    <section id="tab-pane-garage" class="tab-content hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="key" class="w-5 h-5 text-[#D4AF37]"></i>
+                    <span>Minha Garagem Digital</span>
+                </h2>
+                <p class="text-xs text-[#9A9FA8]">Cadastre e gerencie seus carros para agendar rapidamente em qualquer lava-jato da rede</p>
+            </div>
+
+            {% if user.is_authenticated %}
+            <button onclick="toggleNewVehicleForm()" class="gold-btn px-4 py-2.5 rounded-xl text-xs font-black shadow-lg flex items-center justify-center space-x-2 transition-all">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Cadastrar Novo Veículo</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Formulário Oculto de Cadastro Rápido de Carro -->
+        <div id="newVehicleCard" class="hidden rounded-3xl carbon-card p-6 shadow-2xl space-y-4 animate-fade-in border border-[#1EA8D7]/40">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm text-white flex items-center space-x-2">
+                    <i data-lucide="plus" class="w-4 h-4 text-[#1EA8D7]"></i>
+                    <span>Adicionar Carro à Garagem</span>
+                </h3>
+                <button onclick="toggleNewVehicleForm()" class="text-[#9A9FA8] hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form action="{% url 'portal:add_vehicle' %}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'portal:select_company' %}?tab=garage">
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Placa *</label>
+                    <input type="text" name="plate" placeholder="Ex: ABC1D23" required maxlength="10"
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs font-mono uppercase focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Marca *</label>
+                    <input type="text" name="brand" placeholder="Ex: BMW, Toyota" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Modelo *</label>
+                    <input type="text" name="model" placeholder="Ex: 320i, Corolla" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#F5E6BE] mb-1">Cor</label>
+                    <input type="text" name="color" placeholder="Ex: Preto, Prata"
+                        class="w-full px-3 py-2 rounded-xl bg-[#121519] border border-[#A3734C]/30 text-white text-xs focus:border-[#1EA8D7] focus:outline-none">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-1 flex items-end">
+                    <button type="submit" class="gold-btn w-full py-2 px-4 rounded-xl text-xs font-black transition-all">
+                        Salvar Carro
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Veículos Grid -->
+        {% if vehicles %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for v in vehicles %}
+            <div class="rounded-3xl carbon-card p-5 space-y-4 hover:border-[#D4AF37] transition-colors border border-[#A3734C]/25">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        {% render_plate v.plate 'sm' %}
+                        <div>
+                            <h4 class="font-bold text-white text-base">{{ v.brand }} {{ v.model }}</h4>
+                            <span class="text-[11px] text-[#9A9FA8]">{{ v.color|default:"Cor não informada" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-[#9A9FA8] space-y-1 pt-2 border-t border-[#A3734C]/20">
+                    <div class="flex justify-between">
+                        <span>Categoria:</span>
+                        <span class="text-[#F5F5F7] font-medium uppercase">{{ v.get_vehicle_type_display|default:v.vehicle_type }}</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center space-x-2">
+                    <button onclick="switchTab('home')" class="flex-1 py-2 px-3 rounded-xl bg-[#1EA8D7]/15 hover:bg-[#1EA8D7]/25 text-[#38C5EE] border border-[#1EA8D7]/30 font-bold text-xs flex items-center justify-center space-x-1 transition-colors">
+                        <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+                        <span>Escolher Lava-Jato</span>
+                    </button>
+                    <a href="{% url 'portal:delete_vehicle' v.id %}?next={% url 'portal:select_company' %}?tab=garage" onclick="return confirm('Deseja realmente remover este veículo da sua garagem?')" class="p-2 rounded-xl bg-[#1E232A] hover:bg-rose-900/40 text-[#9A9FA8] hover:text-rose-300 border border-[#A3734C]/30 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-16 text-center bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 space-y-3">
+            <div class="w-16 h-16 rounded-3xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-500">
+                <i data-lucide="key" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-slate-200 font-bold text-base">Nenhum veículo cadastrado ainda</h3>
+            <p class="text-slate-400 text-xs max-w-md mx-auto">
+                Adicione seu carro para agilizar o processo de agendamento em toda a rede.
+            </p>
+            {% if user.is_authenticated %}
+            <button onclick="toggleNewVehicleForm()" class="gold-btn inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-white font-bold text-xs transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Cadastrar Primeiro Veículo</span>
+            </button>
+            {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'portal:select_company' %}" class="gold-btn inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-white font-bold text-xs transition-colors">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                <span>Fazer Login para Salvar Carros</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: MEUS AGENDAMENTOS (MULTI-UNIDADE)                      -->
+    <!-- ============================================================== -->
+    <section id="tab-pane-appointments" class="tab-content hidden space-y-6">
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="calendar-clock" class="w-5 h-5 text-blue-400"></i>
+                <span>Histórico e Próximos Agendamentos</span>
+            </h2>
+            <p class="text-xs text-[#9A9FA8]">Consulte seus agendamentos confirmados e pendentes em qualquer lava-jato credenciado</p>
+        </div>
+
+        {% if appointments %}
+        <div class="space-y-3">
+            {% for appt in appointments %}
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-colors">
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-950/60 border border-blue-500/30 flex flex-col items-center justify-center text-blue-400 flex-shrink-0">
+                        <span class="text-xs font-black">{{ appt.scheduled_date|date:"d" }}</span>
+                        <span class="text-[9px] uppercase font-bold">{{ appt.scheduled_date|date:"M" }}</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <h4 class="font-bold text-white text-sm sm:text-base">{{ appt.service_type.name }}</h4>
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase
+                                {% if appt.status == 'confirmed' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+                                {% elif appt.status == 'arrived' %}bg-blue-500/20 text-blue-300 border border-blue-500/30
+                                {% elif appt.status == 'cancelled' %}bg-rose-500/20 text-rose-300 border border-rose-500/30
+                                {% else %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
+                            <span class="text-[11px] text-[#D4AF37] font-semibold bg-[#D4AF37]/10 px-2 py-0.5 rounded-full border border-[#D4AF37]/20 flex items-center space-x-1">
+                                <i data-lucide="store" class="w-3 h-3"></i>
+                                <span>{{ appt.company.name }}</span>
+                            </span>
+                        </div>
+
+                        <div class="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                            <span><i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1 text-slate-500"></i>{{ appt.scheduled_time|time:"H:i" }}</span>
+                            <span><i data-lucide="car" class="w-3.5 h-3.5 inline mr-1 text-slate-500"></i>{{ appt.vehicle.plate }} ({{ appt.vehicle.brand }} {{ appt.vehicle.model }})</span>
+                            <span><i data-lucide="map-pin" class="w-3.5 h-3.5 inline mr-1 text-slate-500"></i>{{ appt.company.address|default:appt.company.name }}</span>
+                        </div>
+
+                        {% if appt.notes %}
+                        <p class="text-[11px] text-slate-500 italic mt-1">Obs: {{ appt.notes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+                    <a href="{% url 'portal:cancel_appointment' appt.id %}?next={% url 'portal:select_company' %}?tab=appointments" 
+                        onclick="return confirm('Deseja realmente cancelar este agendamento?')"
+                        class="px-3 py-1.5 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 text-rose-400 border border-rose-800/40 text-xs font-bold transition-colors">
+                        Cancelar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-16 text-center bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 space-y-3">
+            <div class="w-16 h-16 rounded-3xl bg-slate-800/80 flex items-center justify-center mx-auto text-slate-500">
+                <i data-lucide="calendar" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-slate-200 font-bold text-base">Você não possui agendamentos</h3>
+            <p class="text-slate-400 text-xs max-w-md mx-auto">
+                Escolha uma das unidades credenciadas para agendar a lavagem ou estética do seu carro.
+            </p>
+            <button onclick="switchTab('home')" class="gold-btn inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all">
+                <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                <span>Agendar Horário</span>
+            </button>
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function filterCompaniesLive(query) {
+        const normalized = query.toLowerCase().trim();
+        const cards = document.querySelectorAll('.company-card');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const noResultsBox = document.getElementById('noResultsBox');
+        const badge = document.getElementById('companyCountBadge');
+
+        if (normalized.length > 0) {
+            clearBtn.classList.remove('hidden');
+        } else {
+            clearBtn.classList.add('hidden');
         }
 
-        function clearSearch() {
-            const input = document.getElementById('companySearchInput');
-            if (input) {
-                input.value = '';
-                filterCompaniesLive('');
+        let visibleCount = 0;
+        cards.forEach(card => {
+            const name = card.getAttribute('data-company-name') || '';
+            const address = card.getAttribute('data-company-address') || '';
+            const city = card.getAttribute('data-company-city') || '';
+
+            if (name.includes(normalized) || address.includes(normalized) || city.includes(normalized)) {
+                card.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                card.classList.add('hidden');
             }
+        });
+
+        if (badge) {
+            badge.innerText = visibleCount;
         }
-    </script>
-</body>
-</html>
+
+        if (visibleCount === 0 && cards.length > 0) {
+            noResultsBox.classList.remove('hidden');
+        } else {
+            noResultsBox.classList.add('hidden');
+        }
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('companySearchInput');
+        if (input) {
+            input.value = '';
+            filterCompaniesLive('');
+        }
+    }
+
+    function toggleNewVehicleForm() {
+        const card = document.getElementById('newVehicleCard');
+        if (card) {
+            card.classList.toggle('hidden');
+        }
+    }
+</script>
+{% endblock %}

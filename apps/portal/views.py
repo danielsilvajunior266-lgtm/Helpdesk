@@ -43,8 +43,8 @@ def get_active_company(request):
 def portal_select_company(request):
     """
     Tela inicial de busca e seleção de Lava-Jato para o cliente.
-    Apresenta barra de busca em tempo real, destaque do último lava-jato visitado
-    e catálogo de parceiros credenciados.
+    Apresenta barra de busca em tempo real, destaque do último lava-jato visitado,
+    catálogo de parceiros credenciados e visão global de atendimento dos veículos do cliente.
     """
     search_query = request.GET.get('q', '').strip()
     companies = Company.objects.filter(status='active').select_related('plan')
@@ -61,15 +61,35 @@ def portal_select_company(request):
     last_visited_company = None
     last_order = None
     last_appointment = None
+    vehicles = []
+    active_orders = []
+    recent_orders = []
+    appointments = []
+    loyalty_accounts = []
+    customer = None
 
     if request.user.is_authenticated:
-        last_order = ServiceOrder.objects.filter(
-            customer__user=request.user
-        ).select_related('company', 'vehicle', 'service_type').order_by('-created_at').first()
+        from apps.orders.services import get_user_service_orders
+        customer = Customer.objects.filter(user=request.user).first()
+        vehicles = Vehicle.objects.filter(customer__user=request.user).select_related('company', 'customer').distinct()
 
-        last_appointment = Appointment.objects.filter(
+        all_orders = get_user_service_orders(request.user)
+
+        active_orders = [o for o in all_orders if o.status not in ['delivered', 'cancelled']]
+        recent_orders = [o for o in all_orders if o.status in ['delivered', 'completed']][:10]
+
+        appointments = Appointment.objects.filter(
             customer__user=request.user
-        ).select_related('company', 'vehicle', 'service_type').order_by('-scheduled_date', '-scheduled_time').first()
+        ).select_related('company', 'vehicle', 'service_type', 'customer').order_by('-scheduled_date', '-scheduled_time')
+
+        loyalty_accounts = LoyaltyAccount.objects.filter(
+            customer__user=request.user
+        ).select_related('company', 'company__plan', 'customer').prefetch_related(
+            Prefetch('events', queryset=LoyaltyEvent.objects.order_by('-created_at'))
+        )
+
+        last_order = all_orders.first() if hasattr(all_orders, 'first') else (all_orders[0] if active_orders else None)
+        last_appointment = appointments.first()
 
         if last_order:
             last_visited_company = last_order.company
@@ -86,6 +106,14 @@ def portal_select_company(request):
         'last_visited_company': last_visited_company,
         'last_order': last_order,
         'last_appointment': last_appointment,
+        'vehicles': vehicles,
+        'active_orders': active_orders,
+        'recent_orders': recent_orders,
+        'appointments': appointments,
+        'loyalty_accounts': loyalty_accounts,
+        'customer': customer,
+        'active_tab': request.GET.get('tab', 'home'),
+        'is_select_company_page': True,
     }
     return render(request, 'portal/select_company.html', context)
 
@@ -122,18 +150,17 @@ def portal_home(request):
         services = ServiceType.objects.filter(company=company, is_active=True).select_related('category').order_by('default_price')
 
         if request.user.is_authenticated:
+            from apps.orders.services import get_user_service_orders
             # Obtém ou inicializa perfil de cliente para este usuário
             customer = Customer.objects.filter(user=request.user, company=company).first()
             if not customer:
                 customer = Customer.objects.filter(user=request.user).first()
 
             # Veículos do cliente
-            vehicles = Vehicle.objects.filter(customer__user=request.user).distinct()
+            vehicles = Vehicle.objects.filter(customer__user=request.user).select_related('company', 'customer').distinct()
 
             # Ordens de serviço ativas no pátio e concluídas recentemente
-            all_orders = ServiceOrder.objects.filter(
-                customer__user=request.user
-            ).select_related('company', 'vehicle', 'service_type').prefetch_related('photos').order_by('-created_at')
+            all_orders = get_user_service_orders(request.user, company=company)
 
             active_orders = [o for o in all_orders if o.status not in ['delivered', 'cancelled']]
             recent_orders = [o for o in all_orders if o.status in ['delivered', 'completed']][:5]
@@ -141,14 +168,14 @@ def portal_home(request):
             # Agendamentos do cliente
             appointments = Appointment.objects.filter(
                 customer__user=request.user
-            ).select_related('company', 'vehicle', 'service_type').order_by('-scheduled_date', '-scheduled_time')
+            ).select_related('company', 'vehicle', 'service_type', 'customer').order_by('-scheduled_date', '-scheduled_time')
 
             # Saldo e programa de fidelidade
             if company.has_feature('loyalty'):
                 loyalty_account = LoyaltyAccount.objects.filter(
                     customer__user=request.user,
                     company=company
-                ).prefetch_related(
+                ).select_related('customer', 'company').prefetch_related(
                     Prefetch('events', queryset=LoyaltyEvent.objects.order_by('-created_at'))
                 ).first()
 
@@ -175,6 +202,7 @@ def portal_home(request):
         'customer': customer,
         'today_str': date.today().isoformat(),
         'active_tab': request.GET.get('tab', 'services'),
+        'is_select_company_page': False,
     }
 
     return render(request, 'portal/index.html', context)
@@ -198,16 +226,16 @@ def portal_book_appointment(request):
     company = get_object_or_404(Company, id=company_id, status='active')
     service = get_object_or_404(ServiceType, id=service_id, company=company)
 
-    # Obter ou criar o perfil de Customer para a empresa
-    customer, _ = Customer.objects.get_or_create(
-        user=request.user,
-        company=company,
-        defaults={
-            'name': request.user.get_full_name() or request.user.username,
-            'phone': request.user.phone or '11999999999',
-            'email': request.user.email,
-        }
-    )
+    # Obter ou criar o perfil de Customer para a empresa de forma segura
+    customer = Customer.objects.filter(user=request.user, company=company).first()
+    if not customer:
+        customer = Customer.objects.create(
+            user=request.user,
+            company=company,
+            name=request.user.get_full_name() or request.user.username,
+            phone=request.user.phone or '11999999999',
+            email=request.user.email or '',
+        )
 
     # Obter o veículo
     vehicle = None
@@ -274,26 +302,32 @@ def portal_add_vehicle(request):
     """
     if request.method == 'POST':
         company = get_active_company(request)
+        if not company:
+            company = Company.objects.filter(status='active').first()
+
         plate = request.POST.get('plate', '').strip().upper()
         brand = request.POST.get('brand', '').strip()
         model_name = request.POST.get('model', '').strip()
         color = request.POST.get('color', '').strip()
         vehicle_type = request.POST.get('vehicle_type', 'sedan')
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/portal/?tab=garage'
 
         if not plate or not brand or not model_name:
             messages.error(request, "Preencha placa, marca e modelo do veículo.")
-            return redirect('/portal/?tab=garage')
+            return redirect(next_url)
 
-        # Garantir Customer
-        customer, _ = Customer.objects.get_or_create(
-            user=request.user,
-            company=company,
-            defaults={
-                'name': request.user.get_full_name() or request.user.username,
-                'phone': request.user.phone or '11999999999',
-                'email': request.user.email,
-            }
-        )
+        # Garantir Customer de forma segura
+        customer = Customer.objects.filter(user=request.user, company=company).first()
+        if not customer:
+            customer = Customer.objects.filter(user=request.user).first()
+        if not customer:
+            customer = Customer.objects.create(
+                user=request.user,
+                company=company,
+                name=request.user.get_full_name() or request.user.username,
+                phone=request.user.phone or '11999999999',
+                email=request.user.email or '',
+            )
 
         # Criar ou atualizar veículo
         vehicle, created = Vehicle.objects.get_or_create(
@@ -313,7 +347,10 @@ def portal_add_vehicle(request):
         else:
             messages.info(request, f"Veículo {plate} já constava no cadastro.")
 
-    return redirect('/portal/?tab=garage')
+        return redirect(next_url)
+
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or '/portal/?tab=garage'
+    return redirect(next_url)
 
 
 @login_required
@@ -325,7 +362,8 @@ def portal_delete_vehicle(request, vehicle_id):
     plate = vehicle.plate
     vehicle.delete()
     messages.info(request, f"Veículo {plate} removido da sua garagem.")
-    return redirect('/portal/?tab=garage')
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or '/portal/?tab=garage'
+    return redirect(next_url)
 
 
 @login_required
@@ -341,4 +379,71 @@ def portal_cancel_appointment(request, appointment_id):
     else:
         messages.error(request, "Este agendamento não pode mais ser cancelado pois o serviço já foi iniciado.")
 
-    return redirect('/portal/?tab=appointments')
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or '/portal/?tab=appointments'
+    return redirect(next_url)
+
+
+@login_required
+def portal_live_status(request):
+    """
+    Retorna o status em tempo real das ordens de serviço ativas e recentes do cliente,
+    com suporte para polling assíncrono e detecção de transições de status no front-end.
+    """
+    from apps.orders.services import get_user_service_orders
+    company_id = request.GET.get('company_id')
+    company = None
+    if company_id and str(company_id).isdigit():
+        company = Company.objects.filter(id=int(company_id), status='active').first()
+
+    orders_qs = get_user_service_orders(request.user, company=company)
+
+    orders_data = []
+    for order in orders_qs:
+        photos = [
+            {
+                'id': p.id,
+                'photo_type': p.photo_type,
+                'photo_url': p.photo.url if p.photo else '',
+                'created_at': p.created_at.strftime('%H:%M') if p.created_at else '',
+            }
+            for p in order.photos.all()
+        ]
+
+        # Mapeamento do progresso visual
+        step_progress = 25
+        if order.status == 'waiting':
+            step_progress = 25
+        elif order.status == 'in_progress':
+            step_progress = 60
+        elif order.status == 'completed':
+            step_progress = 90
+        elif order.status == 'delivered':
+            step_progress = 100
+
+        orders_data.append({
+            'id': order.id,
+            'company_id': order.company_id,
+            'company_name': order.company.name,
+            'vehicle_plate': order.vehicle.plate if order.vehicle else '---',
+            'vehicle_name': f"{order.vehicle.brand} {order.vehicle.model}" if order.vehicle else 'Veículo',
+            'vehicle_color': order.vehicle.color if order.vehicle else '',
+            'service_name': order.service_type.name if order.service_type else 'Lavagem Completa VIP',
+            'status': order.status,
+            'status_display': order.get_status_display(),
+            'step_progress': step_progress,
+            'total_price': float(order.total_price),
+            'payment_status': order.payment_status,
+            'assigned_to': order.assigned_to.get_full_name() or order.assigned_to.username if order.assigned_to else 'Especialista VIP',
+            'created_at': order.created_at.strftime('%d/%m/%Y %H:%M'),
+            'started_at': order.started_at.strftime('%H:%M') if order.started_at else None,
+            'completed_at': order.completed_at.strftime('%H:%M') if order.completed_at else None,
+            'delivered_at': order.delivered_at.strftime('%H:%M') if order.delivered_at else None,
+            'photos': photos,
+        })
+
+    return JsonResponse({
+        'success': True,
+        'timestamp': timezone.now().isoformat(),
+        'orders': orders_data,
+        'active_count': len([o for o in orders_data if o['status'] not in ['delivered', 'cancelled']]),
+    })

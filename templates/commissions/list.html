@@ -40,12 +40,12 @@
             <span class="text-xs text-slate-400">{{ commissions.count }} lançamentos</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+            <table class="w-full text-left text-xs whitespace-nowrap min-w-[700px]">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider border-b border-slate-800 text-[10px]">
                     <tr>
                         <th class="px-6 py-3.5 font-semibold">Operador</th>
                         <th class="px-6 py-3.5 font-semibold">OS / Veículo</th>
-                        <th class="px-6 py-3.5 font-semibold">Status</th>
+                        <th class="px-6 py-3.5 font-semibold text-center">Status</th>
                         <th class="px-6 py-3.5 font-semibold">Data Liquidação</th>
                         <th class="px-6 py-3.5 font-semibold text-right">Valor Comissão</th>
                         <th class="px-6 py-3.5 font-semibold text-right">Ação</th>
@@ -54,28 +54,29 @@
                 <tbody class="divide-y divide-slate-800/80">
                     {% for comm in commissions %}
                     <tr class="hover:bg-slate-900/40 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <strong class="text-white text-sm block">{{ comm.employee.get_full_name|default:comm.employee.username }}</strong>
                             <span class="text-slate-500 text-[11px]">{{ comm.employee.email }}</span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{% url 'orders:detail' comm.order.id %}" class="text-blue-400 hover:underline block font-semibold">
-                                OS #{{ comm.order.id }} ({{ comm.order.vehicle.plate }})
+                                Serviço nº {{ comm.order.id }} ({{ comm.order.vehicle.plate }})
                             </a>
                             <span class="text-slate-400 text-[11px]">{{ comm.order.service_type.name }}</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider whitespace-nowrap
                                 {% if comm.status == 'paid' %}bg-emerald-500/10 text-emerald-300 border border-emerald-500/20
                                 {% else %}bg-amber-500/10 text-amber-300 border border-amber-500/20{% endif %}">
+                                <span class="w-1.5 h-1.5 rounded-full {% if comm.status == 'paid' %}bg-emerald-400{% else %}bg-amber-400{% endif %}"></span>
                                 {{ comm.get_status_display }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-slate-400">{{ comm.paid_at|date:"d/m/Y H:i"|default:"Pendente" }}</td>
-                        <td class="px-6 py-4 text-right font-black text-sm text-emerald-400">R$ {{ comm.amount }}</td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap">{{ comm.paid_at|date:"d/m/Y H:i"|default:"Pendente" }}</td>
+                        <td class="px-6 py-4 text-right font-black text-sm text-emerald-400 whitespace-nowrap">R$ {{ comm.amount }}</td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
                             {% if comm.status == 'pending' %}
-                            <a href="{% url 'commissions:pay' comm.id %}" onclick="return confirm('Confirmar pagamento da comissão de R$ {{ comm.amount }}?')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all inline-flex items-center gap-1">
+                            <a href="{% url 'commissions:pay' comm.id %}" onclick="return confirm('Confirmar pagamento da comissão de R$ {{ comm.amount }}?')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all inline-flex items-center gap-1 whitespace-nowrap">
                                 <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                 <span>Pagar Lavador</span>
                             </a>
